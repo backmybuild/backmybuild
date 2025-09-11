@@ -1,0 +1,14 @@
+# Compiler files
+cache/
+out/*
+!out/Fuelme.sol
+
+# Ignores development broadcast logs
+!/broadcast
+/broadcast/**/dry-run/
+
+# Docs
+docs/
+
+# Dotenv file
+.env

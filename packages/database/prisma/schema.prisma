@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+model User {
+  id          Int      @id @default(autoincrement())
+  username    String   @unique
+  fullName    String
+  address     String   @unique
+  avatar      String?
+  bio         String?
+  socialLinks String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  inboundTxs  Transaction[] @relation("ToUserTransactions")
+  stealthAddresses StealthAddress[]
+}
+
+model StealthAddress {
+  id                 String   @id @default(cuid())
+  userId             Int
+  address            String   @unique      // on-chain stealth addr
+  ephemeralPublicKey String
+  balanceWei         BigInt   @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, updatedAt])
+}
+
+model Transaction {
+  id             String   @id @default(cuid())
+  fromAddress    String?
+  toUserId       Int
+  // copy for audit even after stealth row is deleted
+  stealthAddress String
+  amountWei      BigInt
+  txHash         String   @unique
+  message        String?
+  chain          String   // e.g. "base"
+  createdAt      DateTime @default(now())
+
+  toUser User @relation("ToUserTransactions", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  @@index([toUserId, createdAt])
+  @@index([stealthAddress, createdAt])
+}
