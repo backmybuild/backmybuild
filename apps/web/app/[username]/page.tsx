@@ -8,9 +8,20 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 import { Hex, hexToString, stringToHex } from "viem";
-import { getDefaultConfig, RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import {
+  darkTheme,
+  getDefaultConfig,
+  RainbowKitProvider,
+} from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from "wagmi";
-import { mainnet, polygon, optimism, arbitrum, base, baseSepolia } from "wagmi/chains";
+import {
+  mainnet,
+  polygon,
+  optimism,
+  arbitrum,
+  base,
+  baseSepolia,
+} from "wagmi/chains";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import DonateForm, { Key } from "./form";
 
@@ -198,7 +209,12 @@ const DonatePage: NextPage = () => {
           <div className="my-4 h-px w-full bg-gradient-to-r from-transparent via-white/15 to-transparent" />
           <WagmiProvider reconnectOnMount={false} config={config}>
             <QueryClientProvider client={queryClient}>
-              <RainbowKitProvider>
+              <RainbowKitProvider
+                theme={darkTheme({
+                  accentColorForeground: "white",
+                  overlayBlur: "large",
+                })}
+              >
                 <DonateForm
                   username={profile.username}
                   fullname={profile.fullname || ""}

@@ -27,6 +27,7 @@ import {
 } from "./actions";
 import { LogOut } from "lucide-react";
 import { toast } from "react-toastify";
+import { CHAIN } from "@fuelme/defination";
 
 // ------------------------------------------------------------
 // Fuelme — Dashboard Page (rev)
@@ -273,8 +274,21 @@ const FuelmeDashboardPage = () => {
         form.bio || "",
         form.socials || []
       );
-      if (txHash) toast.success("Profile updated successfully!");
-      if (txHash) await loadProfile();
+      if (txHash) {
+        toast.success(
+          <div>
+            Profile updated
+            <a
+              href={CHAIN.blockExplorers.default.url + `/tx/${txHash}`}
+              target="_blank"
+              className="underline decoration-dotted hover:opacity-80 ml-2"
+            >
+              View on Explorer
+            </a>
+          </div>
+        );
+        await loadProfile();
+      }
       setOpenProfileModal(false);
     } catch (e) {
       console.error(e);
@@ -287,25 +301,43 @@ const FuelmeDashboardPage = () => {
     if (!pendingUsername) return;
     if (!data?.user) return;
     setSaving(true);
-    const profile = (await publicClient?.readContract({
-      address: FUELME_ADDRESSES[chain.id] as Address,
-      abi: FUELME_ABI,
-      functionName: "getProfile",
-      args: [stringToHex(pendingUsername)],
-    })) as any;
+    try {
+      const profile = (await publicClient?.readContract({
+        address: FUELME_ADDRESSES[chain.id] as Address,
+        abi: FUELME_ABI,
+        functionName: "getProfile",
+        args: [stringToHex(pendingUsername)],
+      })) as any;
 
-    if (profile[0] != "0x") {
-      setUsernamWarning("Username is already taken");
-    } else {
-      const txHash = await updateProfile(
-        pendingUsername,
-        data?.user?.name || "",
-        data?.user?.image || "",
-        "",
-        ["https://fuelme.fun/" + pendingUsername]
-      );
-      if (txHash) toast.success("Username claimed successfully!");
-      await loadProfile();
+      if (profile[0] != "0x") {
+        setUsernamWarning("Username is already taken");
+      } else {
+        const txHash = await updateProfile(
+          pendingUsername,
+          data?.user?.name || "",
+          data?.user?.image || "",
+          "",
+          ["https://fuelme.fun/" + pendingUsername]
+        );
+        if (txHash) {
+          toast.success(
+            <div>
+              Profile updated
+              <a
+                href={CHAIN.blockExplorers.default.url + `/tx/${txHash}`}
+                target="_blank"
+                className="underline decoration-dotted hover:opacity-80 ml-2"
+              >
+                View on Explorer
+              </a>
+            </div>
+          );
+          await loadProfile();
+        }
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to claim username.");
     }
     setSaving(false);
   };
@@ -400,9 +432,7 @@ const FuelmeDashboardPage = () => {
                 <tr>
                   <th className="text-left font-medium px-4 h-10">Time</th>
                   <th className="text-left font-medium px-4 h-10">Tx Hash</th>
-                  <th className="text-right font-medium px-4 h-10">
-                    Amount (ETH)
-                  </th>
+                  <th className="text-right font-medium px-4 h-10">Amount</th>
                 </tr>
               </thead>
               <tbody>
@@ -426,7 +456,7 @@ const FuelmeDashboardPage = () => {
                     </td>
                     <td className="px-4 h-12 align-middle">
                       <a
-                        href={`https://basescan.org/tx/${t.txHash}`}
+                        href={`${CHAIN.blockExplorers.default.url}/tx/${t.txHash}`}
                         target="_blank"
                         className="underline decoration-dotted hover:opacity-80"
                       >
@@ -434,7 +464,7 @@ const FuelmeDashboardPage = () => {
                       </a>
                     </td>
                     <td className="px-4 h-12 text-right align-middle font-medium">
-                      {Number(formatEther(t.valueWei)).toFixed(6)}
+                      {Number(formatUnits(t.valueWei, 6)).toFixed(3)} USDC
                     </td>
                   </tr>
                 ))}

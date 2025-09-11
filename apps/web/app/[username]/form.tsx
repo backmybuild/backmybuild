@@ -56,6 +56,7 @@ const DonateForm: React.FC<DonateProps> = ({
   const currentChainId = useChainId();
   const [balance, setBalance] = useState<bigint | null>(null);
   const [amount, setAmount] = useState("");
+  const [isSending, setIsSending] = useState(false);
   const { signTypedDataAsync } = useSignTypedData();
   const amt = useMemo(() => (amount ? Number(amount) : NaN), [amount]);
   const isValid = !Number.isNaN(amt) && amt > 0;
@@ -79,6 +80,7 @@ const DonateForm: React.FC<DonateProps> = ({
   }, [isConnected, address]);
 
   const onDonate = async () => {
+    setIsSending(true);
     try {
       if (
         !isConnected ||
@@ -98,7 +100,10 @@ const DonateForm: React.FC<DonateProps> = ({
         stealthKey.viewingPublicKey
       );
 
-      const encryptedMessage = encryptSymmetric(stealthKey.encryptionPublicKey as string, message);
+      const encryptedMessage = encryptSymmetric(
+        stealthKey.encryptionPublicKey as string,
+        message
+      );
       const postMessage = stringToHex(
         [
           encryptedMessage.nonce,
@@ -158,7 +163,7 @@ const DonateForm: React.FC<DonateProps> = ({
         },
       });
 
-      await donate(donationInfor, {
+      const txHash = await donate(donationInfor, {
         from: address,
         value: parseUnits(amount || "0", 6),
         validAfter: now,
@@ -166,17 +171,29 @@ const DonateForm: React.FC<DonateProps> = ({
         signature: donateSignature,
       });
 
-      toast.success("Donation successful! Thank you for your support.");
+      toast.success(
+        <div>
+          Donation successful{" "}
+          <a
+            href={CHAIN.blockExplorers.default.url + `/tx/${txHash}`}
+            target="_blank"
+            className="underline decoration-dotted hover:opacity-80 ml-2"
+          >
+            View on scan
+          </a>
+        </div>
+      );
     } catch (error) {
       console.error("Donation error:", error);
       toast.error("Error processing donation. Please try again.");
     }
+    setIsSending(false);
   };
 
   return (
     <div>
       <label htmlFor="amount" className="mb-2 block text-sm text-white/80">
-        Buy me a coffee
+        Support {fullname} privately
       </label>
       <div className="relative">
         <input
@@ -196,23 +213,14 @@ const DonateForm: React.FC<DonateProps> = ({
           <>Balance: {(Number(balance) / 1e6).toFixed(6)} USDC</>
         )}
       </div>
-      <div className="mt-4 flex flex-wrap justify-center gap-3">
-        {presets.map((p) => (
-          <button
-            key={p}
-            onClick={() => setAmount(p)}
-            className="rounded-full border border-white/10 px-4 py-2 text-sm hover:bg-white/10"
-          >
-            {p}
-          </button>
-        ))}
-      </div>
-
+      <label htmlFor="amount" className="mb-2 block text-sm text-white/80">
+        Say something (optional)
+      </label>
       <div className="mt-5 text-left">
         <textarea
           id="message"
           rows={2}
-          placeholder={`Say something nice to ${fullname || username}... (optional)`}
+          placeholder={`Say something (optional)`}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           className="w-full resize-none rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm leading-relaxed focus:outline-none"
@@ -224,16 +232,17 @@ const DonateForm: React.FC<DonateProps> = ({
           disabled={
             !isValid ||
             (balance !== null && balance < BigInt(amt * 1e6)) ||
-            !amount
+            !amount ||
+            isSending
           }
-          className="mt-6 w-full rounded-2xl bg-white text-black px-6 py-4 text-lg font-semibold disabled:opacity-40"
+          className="mt-6 w-full rounded-2xl bg-white text-black px-6 py-4 text-lg font-semibold hover:cursor-pointer disabled:opacity-40"
         >
-          Buy me a coffee
+          {isSending ? "Processing..." : `Donate ${fullname}`}
         </button>
       ) : (
         <div className="mb-4 text-center text-sm text-white/70 flex">
           <button
-            className="mt-6 w-full rounded-2xl bg-white text-black px-6 py-4 text-lg font-semibold disabled:opacity-40"
+            className="mt-6 w-full rounded-2xl bg-blue-700 px-6 py-4 text-lg font-semibold hover:cursor-pointer disabled:opacity-40"
             onClick={openConnectModal}
           >
             Connect Wallet to Donate
