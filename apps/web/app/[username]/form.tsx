@@ -55,7 +55,7 @@ const DonateForm: React.FC<DonateProps> = ({
   const { switchChainAsync } = useSwitchChain();
   const currentChainId = useChainId();
   const [balance, setBalance] = useState<bigint | null>(null);
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState("5");
   const [isSending, setIsSending] = useState(false);
   const { signTypedDataAsync } = useSignTypedData();
   const amt = useMemo(() => (amount ? Number(amount) : NaN), [amount]);
@@ -82,14 +82,12 @@ const DonateForm: React.FC<DonateProps> = ({
   const onDonate = async () => {
     setIsSending(true);
     try {
-      if (
-        !isConnected ||
-        !address ||
-        !isValid ||
-        !stealthKey ||
-        !currentChainId
-      )
+      if (!isValid) {
+        toast.warning("Please enter a valid amount.");
+        setIsSending(false);
         return;
+      }
+      if (!isConnected || !address || !stealthKey || !currentChainId) return;
       if (currentChainId !== CHAIN.id) {
         await switchChainAsync({
           chainId: CHAIN.id,
@@ -193,61 +191,88 @@ const DonateForm: React.FC<DonateProps> = ({
   return (
     <div>
       <label htmlFor="amount" className="mb-2 block text-sm text-white/80">
-        Support {fullname} privately
+        Support {fullname}
       </label>
-      <div className="relative">
-        <input
-          id="amount"
-          type="number"
-          placeholder="1.00"
-          value={amount}
-          onChange={(e) => setAmount(formatEth(e.target.value))}
-          className="w-full rounded-2xl border border-white/10 bg-black/40 px-5 py-4 pr-20 text-lg focus:outline-none"
-        />
-        <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm text-white/70">
-          USDC
-        </span>
+
+      {/* Quick select buttons */}
+      <div className="flex gap-2 mb-4">
+        {[1, 5, 10].map((val) => (
+          <button
+            key={val}
+            type="button"
+            onClick={() => setAmount(val.toString())}
+            className={`flex-1 rounded-2xl border border-white/10 px-4 py-3 text-sm font-medium transition
+          ${
+            amount === val.toString()
+              ? "bg-white text-black"
+              : "bg-black/40 text-white/80 hover:bg-white/10"
+          }`}
+          >
+            ${val}
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={() => setAmount("")}
+          className={`flex-1 rounded-2xl border border-white/10 px-4 py-3 text-sm font-medium transition
+        ${amount === "" ? "bg-white text-black" : "bg-black/40 text-white/80 hover:bg-white/10"}`}
+        >
+          Custom
+        </button>
       </div>
+
+      {/* Custom input */}
+      {amount === "" && (
+        <div className="relative">
+          <input
+            id="amount"
+            type="number"
+            placeholder="Enter amount"
+            value={amount}
+            onChange={(e) => setAmount(formatEth(e.target.value))}
+            className="w-full rounded-2xl border border-white/10 bg-black/40 px-5 py-4 pr-20 text-lg focus:outline-none"
+          />
+          <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm text-white/70">
+            USDC
+          </span>
+        </div>
+      )}
+
+      {/* Balance */}
       <div className="mt-2 text-right text-xs text-white/70">
         {balance !== null && (
           <>Balance: {(Number(balance) / 1e6).toFixed(6)} USDC</>
         )}
       </div>
-      <label htmlFor="amount" className="mb-2 block text-sm text-white/80">
-        Say something (optional)
-      </label>
+
+      {/* Message */}
       <div className="mt-5 text-left">
         <textarea
           id="message"
           rows={2}
-          placeholder={`Say something (optional)`}
+          placeholder="Say something (optional)"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           className="w-full resize-none rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm leading-relaxed focus:outline-none"
         />
       </div>
+
+      {/* Buttons */}
       {isConnected ? (
         <button
           onClick={onDonate}
-          disabled={
-            !isValid ||
-            (balance !== null && balance < BigInt(amt * 1e6)) ||
-            !amount ||
-            isSending
-          }
-          className="mt-6 w-full rounded-2xl bg-white text-black px-6 py-4 text-lg font-semibold hover:cursor-pointer disabled:opacity-40"
+          disabled={isSending}
+          className="mt-6 px-4 py-2 w-full rounded-2xl bg-white text-black font-semibold hover:cursor-pointer disabled:opacity-40"
         >
-          {isSending ? "Processing..." : `Donate ${fullname}`}
+          {isSending ? "Processing..." : "Send tip privately"}
         </button>
       ) : (
-        <div className="mb-4 text-center text-sm text-white/70 flex">
-          <button
-            className="mt-6 w-full rounded-2xl bg-blue-700 px-6 py-4 text-lg font-semibold hover:cursor-pointer disabled:opacity-40"
-            onClick={openConnectModal}
-          >
-            Connect Wallet to Donate
-          </button>
-        </div>
+        <button
+          className="mt-6 px-4 py-2 w-full rounded-2xl bg-white text-black font-semibold hover:cursor-pointer disabled:opacity-40"
+          onClick={openConnectModal}
+        >
+          Connect Wallet
+        </button>
       )}
     </div>
   );

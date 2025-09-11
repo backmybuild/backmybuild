@@ -175,9 +175,9 @@ const DonatePage: NextPage = () => {
   }
 
   return (
-    <main className="min-h-screen w-full bg-gradient-to-b from-black via-zinc-950 to-black text-white">
-      <div className="mx-auto w-full max-w-sm sm:max-w-md md:max-w-lg px-4 pt-10 pb-24">
-        <section className="rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl shadow-xl text-center w-full">
+    <main className="h-svh bg-black text-white grid place-items-center transition-opacity duration-300">
+      <div className="mx-auto w-full max-w-sm sm:max-w-md md:max-w-lg px-4 h-full flex items-center">
+        <section className="w-full rounded-3xl border border-white/10 bg-white/5 p-6 sm:p-8 backdrop-blur-xl shadow-xl text-center flex flex-col justify-center overflow-y-auto">
           <div className="flex flex-col items-center gap-5">
             <Image
               src={profile.avatarUrl || ""}
