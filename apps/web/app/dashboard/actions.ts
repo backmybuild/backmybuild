@@ -132,8 +132,6 @@ export const getUserBalanceAndTransaction = async () => {
     _sum: { amountWei: true },
   });
   let balance = BigInt(recv._sum.amountWei?.toFixed() ?? 0);
-  console.log("balance", { balance });
-  console.log("txs", { txs });
   return {
     balance,
     txs: txs.map((t) => ({ 
