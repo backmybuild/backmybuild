@@ -1,16 +1,26 @@
 "use server";
+import "server-only"
 import { FUELME_ABI, FUELME_ADDRESSES } from "@fuelme/contracts";
 import { getServerSession } from "next-auth";
 import { Hex } from "thirdweb";
-import { Address, createWalletClient, hashMessage, http, keccak256, stringToHex } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
 import {
-  CHAIN,
-  publicClient,
-} from "@fuelme/defination";
+  Address,
+  createWalletClient,
+  hashMessage,
+  http,
+  keccak256,
+  stringToHex,
+} from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+import { CHAIN, publicClient } from "@fuelme/defination";
 import { ACCOUNT_SEEDS, PRIVATE_KEY } from "@fuelme/defination/server";
 import { uploadImage } from "../../services/uploadImage";
-import { computeViewingKey, getEncryptionPublicKey } from "@fuelme/stealth";
+import {
+  computeViewingKey,
+  generateSpendingKeyFromSignature,
+  getEncryptionPublicKey,
+  STEALTH_SIGN_MESSAGE,
+} from "@fuelme/stealth";
 
 export const getSpendingAddress = async (): Promise<Address> => {
   const user = await getServerSession();
@@ -34,7 +44,11 @@ export const updateProfile = async (
     throw new Error("User not authenticated");
   }
   const userPrivateKey = hashMessage(user?.user?.email + ACCOUNT_SEEDS);
-  const account = privateKeyToAccount(userPrivateKey);
+  const authorizedAccount = privateKeyToAccount(userPrivateKey);
+  const authorizedSignature = await authorizedAccount.signMessage({
+    message: STEALTH_SIGN_MESSAGE,
+  });
+  const spendingKey = generateSpendingKeyFromSignature(authorizedSignature);
 
   let avatarUpload: string = avatar;
   if (avatar.startsWith("data:")) {
@@ -42,22 +56,21 @@ export const updateProfile = async (
       kind: "avatar",
     });
   }
-
   const profile = stringToHex(
     [fullname, avatarUpload, links.join(","), bio || ""].join("|")
   );
   const encryptionPublicKey = getEncryptionPublicKey(userPrivateKey.slice(2));
   const viewingKey = computeViewingKey(
     stringToHex(ACCOUNT_SEEDS),
-    account.address
+    authorizedAccount.address
   );
   const key = stringToHex(
-    [account.publicKey, viewingKey.publicKey, encryptionPublicKey].join("|")
+    [spendingKey.publicKey, viewingKey.publicKey, encryptionPublicKey].join("|")
   );
 
   const nonce = BigInt(new Date().valueOf());
 
-  const createProfileSignature = await account.signTypedData({
+  const createProfileSignature = await authorizedAccount.signTypedData({
     domain: {
       name: "FuelMe",
       version: "1",

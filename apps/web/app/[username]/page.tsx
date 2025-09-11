@@ -1,29 +1,18 @@
 "use client";
-import '@rainbow-me/rainbowkit/styles.css';
+import "@rainbow-me/rainbowkit/styles.css";
 import { FUELME_ABI, FUELME_ADDRESSES } from "@fuelme/contracts";
 import { CHAIN, publicClient } from "@fuelme/defination";
 import { NextPage } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 import { Hex, hexToString, stringToHex } from "viem";
-import {
-  getDefaultConfig,
-  RainbowKitProvider,
-} from '@rainbow-me/rainbowkit';
-import { WagmiProvider } from 'wagmi';
-import {
-  mainnet,
-  polygon,
-  optimism,
-  arbitrum,
-  base,
-} from 'wagmi/chains';
-import {
-  QueryClientProvider,
-  QueryClient,
-} from "@tanstack/react-query";
-import DonateButton from "./donateButton";
+import { getDefaultConfig, RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import { WagmiProvider } from "wagmi";
+import { mainnet, polygon, optimism, arbitrum, base, baseSepolia } from "wagmi/chains";
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import DonateForm, { Key } from "./form";
 
 export type Profile = {
   username: string;
@@ -31,18 +20,17 @@ export type Profile = {
   bio?: string;
   avatarUrl?: string;
   socials?: string[];
+  key: Key;
 };
 
 const config = getDefaultConfig({
-  appName: 'Fuelme',
-  projectId: 'YOUR_PROJECT_ID',
-  chains: [mainnet, polygon, optimism, arbitrum, base],
+  appName: "Fuelme",
+  projectId: "a785a0fcd3b62bf29680219fcd2409c4",
+  chains: [baseSepolia, base],
   ssr: true, // If your dApp uses server side rendering (SSR)
 });
 
-
-const AVATAR_URL =
-  "https://www.showra.xyz/_next/image?url=https%3A%2F%2Fres.cloudinary.com%2Fduchuy%2Fimage%2Fupload%2Fv1756008485%2Favatars%2Fxkyvwmu8cy7bn7ywlr0f.png&w=3840&q=75";
+const queryClient = new QueryClient();
 
 const Icon = ({
   name,
@@ -106,26 +94,11 @@ function getLinkType(url: string): "github" | "telegram" | "x" | "default" {
   }
 }
 
-const formatEth = (v: string) => {
-  if (!v) return "";
-  const cleaned = v.replace(/[^0-9.]/g, "");
-  const [head, ...rest] = cleaned.split(".");
-  const dec = rest.join("");
-  return dec ? `${head}.${dec.slice(0, 6)}` : head;
-};
-
 const DonatePage: NextPage = () => {
   const params = useParams();
   const username = params.username as string;
   const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
-
-  const [amount, setAmount] = useState("");
-  const amt = useMemo(() => (amount ? Number(amount) : NaN), [amount]);
-  const isValid = !Number.isNaN(amt) && amt > 0;
-
-  const [message, setMessage] = useState(""); // added
-  const MAX_MESSAGE_LEN = 200; // added
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -138,18 +111,30 @@ const DonatePage: NextPage = () => {
       const profileData = profileEncoded
         ? ((profileEncoded as any)[1] as Hex)
         : null;
-      if (!profileData) {
+      const keyData = profileEncoded
+        ? ((profileEncoded as any)[0] as Hex)
+        : null;
+      if (profileData == "0x" || keyData == "0x" || !profileData || !keyData) {
         setIsLoading(false);
         return;
       } else {
         const profileDecoded = hexToString(profileData);
         const profileArray = profileDecoded.split("|");
+
+        const keyDecoded = hexToString(keyData);
+        const keyArray = keyDecoded.split("|");
+
         setProfile({
           username,
           fullname: profileArray[0] || "",
           avatarUrl: profileArray[1] || "",
           socials: profileArray[2] ? profileArray[2].split(",") : [],
           bio: profileArray[3] || "",
+          key: {
+            spendingPublicKey: keyArray[0] as Hex,
+            viewingPublicKey: keyArray[1] as Hex,
+            encryptionPublicKey: keyArray[2] as String,
+          },
         });
         setIsLoading(false);
       }
@@ -158,13 +143,6 @@ const DonatePage: NextPage = () => {
       fetchProfile();
     }
   }, [username]);
-
-  const presets = ["0.5", "1", "5", "10"];
-
-  const onDonate = () => {
-    if (!isValid) return;
-    alert(`Donate ${amount} ETH clicked — wire this to wagmi/ethers.`);
-  };
 
   if (isLoading) {
     return (
@@ -178,6 +156,9 @@ const DonatePage: NextPage = () => {
     return (
       <main className="min-h-screen w-full bg-gradient-to-b from-black via-zinc-950 to-black text-white flex items-center justify-center">
         <div className="text-white/70">Profile not found.</div>
+        <Link className="ml-2 text-white/70" href="/">
+          Go back to home
+        </Link>
       </main>
     );
   }
@@ -188,7 +169,7 @@ const DonatePage: NextPage = () => {
         <section className="rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl shadow-xl text-center w-full">
           <div className="flex flex-col items-center gap-5">
             <Image
-              src={profile.avatarUrl || AVATAR_URL}
+              src={profile.avatarUrl || ""}
               alt={`${profile.fullname} avatar`}
               width={128}
               height={128}
@@ -214,51 +195,18 @@ const DonatePage: NextPage = () => {
             ))}
           </div>
 
-          <div className="my-8 h-px w-full bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-
-          <label htmlFor="amount" className="mb-2 block text-sm text-white/80">
-            Buy me a coffee
-          </label>
-          <div className="relative">
-            <input
-              id="amount"
-              inputMode="decimal"
-              placeholder="1.00"
-              value={amount}
-              onChange={(e) => setAmount(formatEth(e.target.value))}
-              className="w-full rounded-2xl border border-white/10 bg-black/40 px-5 py-4 pr-20 text-lg"
-            />
-            <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm text-white/70">
-              USDC
-            </span>
-          </div>
-          <div className="mt-4 flex flex-wrap justify-center gap-3">
-            {presets.map((p) => (
-              <button
-                key={p}
-                onClick={() => setAmount(p)}
-                className="rounded-full border border-white/10 px-4 py-2 text-sm hover:bg-white/10"
-              >
-                {p}
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-5 text-left">
-            <textarea
-              id="message"
-              rows={2}
-              maxLength={MAX_MESSAGE_LEN}
-              placeholder={`Say something nice to ${profile.fullname || profile.username}... (optional)`}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              className="w-full resize-none rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm leading-relaxed"
-            />
-            <div className="mt-1 text-right text-xs text-white/50">
-              {message.length}/{MAX_MESSAGE_LEN}
-            </div>
-          </div>
-          <DonateButton />
+          <div className="my-4 h-px w-full bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+          <WagmiProvider reconnectOnMount={false} config={config}>
+            <QueryClientProvider client={queryClient}>
+              <RainbowKitProvider>
+                <DonateForm
+                  username={profile.username}
+                  fullname={profile.fullname || ""}
+                  stealthKey={profile.key}
+                />
+              </RainbowKitProvider>
+            </QueryClientProvider>
+          </WagmiProvider>
         </section>
       </div>
     </main>

@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
         hostname: "**",
       },
     ],
+    unoptimized: true,
   },
   webpack: (config) => {
     config.externals.push(

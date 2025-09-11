@@ -13,6 +13,7 @@ import {
   stringToHex,
 } from "viem";
 import Link from "next/link";
+import Image from "next/image";
 import Logo from "../../components/Logo";
 import { baseSepolia } from "viem/chains";
 import { FUELME_ABI, FUELME_ADDRESSES } from "@fuelme/contracts";
@@ -236,11 +237,6 @@ const FuelmeDashboardPage = () => {
     }
   }, [status]);
 
-  const handleShare = async () => {
-    // const url = `${window.location.origin}/@${profile?.username ?? address}`;
-    // await navigator.clipboard.writeText(url); alert("Share link copied to clipboard!\n" + url);
-  };
-
   const onOpenProfile = () => {
     if (profile) setForm(profile);
     setOpenProfileModal(true);
@@ -269,6 +265,7 @@ const FuelmeDashboardPage = () => {
   const onClaimUsername = async () => {
     if (!pendingUsername) return;
     if (!data?.user) return;
+    setSaving(true);
     const profile = (await publicClient?.readContract({
       address: FUELME_ADDRESSES[chain.id] as Address,
       abi: FUELME_ABI,
@@ -278,19 +275,18 @@ const FuelmeDashboardPage = () => {
 
     if (profile[0] != "0x") {
       setUsernamWarning("Username is already taken");
-      return;
+    } else {
+      const txHash = await updateProfile(
+        pendingUsername,
+        data?.user?.name || "",
+        data?.user?.image || "",
+        "",
+        ["https://fuelme.fun/" + pendingUsername]
+      );
+      if (txHash) toast.success("Username claimed successfully!");
+      await loadProfile();
     }
-
-    const txHash = await updateProfile(
-      pendingUsername,
-      data?.user?.name || "",
-      data?.user?.image || "",
-      "",
-      []
-    );
-
-    console.log(txHash);
-    await loadProfile();
+    setSaving(false);
   };
 
   if (status === "loading" || profileStore.isLoading) {
@@ -320,9 +316,13 @@ const FuelmeDashboardPage = () => {
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative">
             <div className="flex items-center gap-4">
-              <img
+              <Image
+                width={20}
+                height={20}
+                quality={100}
                 src={profile?.avatarUrl || "/avatar.png"}
                 alt="avatar"
+                priority
                 className="w-20 h-20 rounded-2xl object-cover border border-white/10"
               />
               <div>
