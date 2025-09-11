@@ -20,6 +20,7 @@ import {
 import { encryptSymmetric, generateStealthAddress } from "@fuelme/stealth";
 import { FUELME_ADDRESSES } from "@fuelme/contracts";
 import { toast } from "react-toastify";
+import { donate } from "./action";
 
 const formatEth = (v: string) => {
   if (!v) return "";
@@ -157,7 +158,15 @@ const DonateForm: React.FC<DonateProps> = ({
         },
       });
 
-      console.log({ donationInfor, donateHash, donateSignature });
+      await donate(donationInfor, {
+        from: address,
+        value: parseUnits(amount || "0", 6),
+        validAfter: now,
+        validBefore: now + BigInt(3600),
+        signature: donateSignature,
+      });
+
+      toast.success("Donation successful! Thank you for your support.");
     } catch (error) {
       console.error("Donation error:", error);
       toast.error("Error processing donation. Please try again.");
