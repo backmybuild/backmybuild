@@ -6,6 +6,7 @@ import {
   Address,
   createPublicClient,
   formatEther,
+  formatUnits,
   hashMessage,
   Hex,
   hexToString,
@@ -19,7 +20,11 @@ import { baseSepolia } from "viem/chains";
 import { FUELME_ABI, FUELME_ADDRESSES } from "@fuelme/contracts";
 import { signOut, useSession } from "next-auth/react";
 import { redirect, useRouter } from "next/navigation";
-import { updateProfile, getSpendingAddress } from "./actions";
+import {
+  updateProfile,
+  getSpendingAddress,
+  getUserBalanceAndTransaction,
+} from "./actions";
 import { LogOut } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -34,11 +39,10 @@ import { toast } from "react-toastify";
 
 // Types
 export type TxItem = {
-  hash: `0x${string}`;
-  from: `0x${string}`;
-  to: `0x${string}`;
+  txHash: string;
   valueWei: bigint;
-  timestamp: number; // seconds
+  timestamp: Date;
+  message: string | null;
 };
 
 export type Profile = {
@@ -197,6 +201,7 @@ const FuelmeDashboardPage = () => {
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const [txs, setTxs] = useState<TxItem[]>([]);
+  const [balance, setBalance] = useState<bigint>(0n);
   const [profileStore, setProfileStore] = useState<ProfileStore>({
     isLoading: true,
     profile: {
@@ -229,11 +234,27 @@ const FuelmeDashboardPage = () => {
     setProfileStore({ profile, isLoading: false });
   };
 
+  const loadTxs = async () => {
+    setLoadingTxs(true);
+    const { balance, txs } = await getUserBalanceAndTransaction();
+    setBalance(balance);
+    setTxs(
+      txs.map((t) => ({
+        txHash: t.txHash,
+        valueWei: t.amountWei,
+        timestamp: t.createdAt,
+        message: t.message,
+      }))
+    );
+    setLoadingTxs(false);
+  };
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
     } else if (status === "authenticated") {
       loadProfile();
+      loadTxs();
     }
   }, [status]);
 
@@ -355,7 +376,7 @@ const FuelmeDashboardPage = () => {
           <div className="mt-6 sm:mt-8 max-w-lg">
             <h2 className="text-sm text-white/70">Total earned</h2>
             <span className="block text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight bg-clip-text text-transparent bg-[radial-gradient(100%_100%_at_0%_0%,_#fff,_#9be7ff_40%,_#7cfad2_70%,_#ffffff_100%)] drop-shadow-[0_0_25px_rgba(124,250,210,0.25)]">
-              123.456 USDC
+              {formatUnits(balance, 6)} USDC
             </span>
             <div className="mt-2 text-sm text-white/70">
               Across{" "}
@@ -378,7 +399,6 @@ const FuelmeDashboardPage = () => {
               <thead className="bg-white/5 text-white/70">
                 <tr>
                   <th className="text-left font-medium px-4 h-10">Time</th>
-                  <th className="text-left font-medium px-4 h-10">From</th>
                   <th className="text-left font-medium px-4 h-10">Tx Hash</th>
                   <th className="text-right font-medium px-4 h-10">
                     Amount (ETH)
@@ -398,22 +418,19 @@ const FuelmeDashboardPage = () => {
                 )}
                 {txs.map((t) => (
                   <tr
-                    key={t.hash}
+                    key={t.txHash}
                     className="border-t border-white/10 hover:bg-white/[.04]"
                   >
                     <td className="px-4 h-12 align-middle">
-                      {formatTime(t.timestamp)}
-                    </td>
-                    <td className="px-4 h-12 align-middle">
-                      {trimHash(t.from)}
+                      {t.timestamp.toLocaleString()}
                     </td>
                     <td className="px-4 h-12 align-middle">
                       <a
-                        href={`https://basescan.org/tx/${t.hash}`}
+                        href={`https://basescan.org/tx/${t.txHash}`}
                         target="_blank"
                         className="underline decoration-dotted hover:opacity-80"
                       >
-                        {trimHash(t.hash)}
+                        {trimHash(t.txHash)}
                       </a>
                     </td>
                     <td className="px-4 h-12 text-right align-middle font-medium">

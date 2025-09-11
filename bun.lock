@@ -15,7 +15,10 @@
     "apps/crawler": {
       "name": "crawler",
       "dependencies": {
+        "@fuelme/contracts": "*",
         "@fuelme/database": "*",
+        "@fuelme/defination": "*",
+        "@fuelme/stealth": "*",
       },
       "devDependencies": {
         "@types/bun": "latest",
@@ -61,6 +64,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@fuelme/contracts": "*",
+        "@fuelme/database": "*",
         "@fuelme/defination": "*",
         "@fuelme/stealth": "*",
         "@rainbow-me/rainbowkit": "^2.2.8",

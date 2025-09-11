@@ -1,5 +1,5 @@
 "use server";
-import "server-only"
+import "server-only";
 import { FUELME_ABI, FUELME_ADDRESSES } from "@fuelme/contracts";
 import { getServerSession } from "next-auth";
 import { Hex } from "thirdweb";
@@ -21,6 +21,7 @@ import {
   getEncryptionPublicKey,
   STEALTH_SIGN_MESSAGE,
 } from "@fuelme/stealth";
+import prisma from "@fuelme/database";
 
 export const getSpendingAddress = async (): Promise<Address> => {
   const user = await getServerSession();
@@ -109,4 +110,36 @@ export const updateProfile = async (
   await publicClient.waitForTransactionReceipt({ hash: txHash });
 
   return txHash;
+};
+
+export const getUserBalanceAndTransaction = async () => {
+  const user = await getServerSession();
+  if (!user?.user?.email) {
+    throw new Error("User not authenticated");
+  }
+
+  const userPrivateKey = hashMessage(user?.user?.email + ACCOUNT_SEEDS);
+  const authorizedAccount = privateKeyToAccount(userPrivateKey);
+  const authorizedAddress = authorizedAccount.address;
+
+  const txs = await prisma.transaction.findMany({
+    where: { authorizedAddress },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const recv = await prisma.transaction.aggregate({
+    where: { authorizedAddress, isActive: true, type: "RECEIVE" },
+    _sum: { amountWei: true },
+  });
+  let balance = BigInt(recv._sum.amountWei?.toFixed() ?? 0);
+  console.log("balance", { balance });
+  console.log("txs", { txs });
+  return {
+    balance,
+    txs: txs.map((t) => ({ 
+      ...t,
+      type: t.type as "WITHDRAW" | "RECEIVE",
+      amountWei: BigInt(t.amountWei.toFixed(0)) 
+    })),
+  };
 };

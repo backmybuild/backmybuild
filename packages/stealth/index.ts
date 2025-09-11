@@ -7,8 +7,10 @@ import {
 } from "@noble/secp256k1";
 import {
   bytesToHex,
+  getAddress,
   hashMessage,
   hexToBytes,
+  hexToNumber,
   keccak256,
   type Address,
   type Hex,
@@ -157,9 +159,7 @@ export const checkStealthAddress = (
   const hashSharedSecret = keccak256(sharedSecret);
   const computedViewTag = getViewTag(hashSharedSecret);
 
-  console.log({ computedViewTag, viewTag });
-
-  if (computedViewTag !== viewTag) {
+  if (hexToNumber(computedViewTag) !== hexToNumber(viewTag)) {
     return false;
   }
 
@@ -169,7 +169,7 @@ export const checkStealthAddress = (
   );
   const newStealthAddress = publicKeyToAddress(newStealthPublicKey);
 
-  return stealthAddress === newStealthAddress;
+  return getAddress(stealthAddress) === getAddress(newStealthAddress);
 };
 
 export type EthEncryptedData = {

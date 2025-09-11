@@ -15,6 +15,7 @@ import {
   keccak256,
   parseAbiParameters,
   parseUnits,
+  stringToHex,
   toHex,
 } from "viem";
 import { encryptSymmetric, generateStealthAddress } from "@fuelme/stealth";
@@ -79,7 +80,6 @@ const DonateForm: React.FC<DonateProps> = ({
 
   const onDonate = async () => {
     try {
-      console.log("Donate", { amount, message });
       if (
         !isConnected ||
         !address ||
@@ -98,14 +98,14 @@ const DonateForm: React.FC<DonateProps> = ({
         stealthKey.viewingPublicKey
       );
 
-      let encryptedMessage: Hex = "0x";
-      if (message) {
-        encryptedMessage = toHex(
-          JSON.stringify(
-            encryptSymmetric(stealthKey.encryptionPublicKey as string, message)
-          )
-        );
-      }
+      const encryptedMessage = encryptSymmetric(stealthKey.encryptionPublicKey as string, message);
+      const postMessage = stringToHex(
+        [
+          encryptedMessage.nonce,
+          encryptedMessage.ephemPublicKey,
+          encryptedMessage.ciphertext,
+        ].join("|")
+      );
 
       const now = BigInt(Math.floor(Date.now() / 1000));
 
@@ -113,7 +113,7 @@ const DonateForm: React.FC<DonateProps> = ({
         to: newStealthAddress.address,
         viewTag: newStealthAddress.viewTag,
         ephemeralPublicKey: newStealthAddress.ephemeralPublicKey,
-        message: encryptedMessage,
+        message: postMessage,
       };
 
       const donateHash = keccak256(
