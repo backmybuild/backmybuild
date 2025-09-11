@@ -157,6 +157,8 @@ export const checkStealthAddress = (
   const hashSharedSecret = keccak256(sharedSecret);
   const computedViewTag = getViewTag(hashSharedSecret);
 
+  console.log({ computedViewTag, viewTag });
+
   if (computedViewTag !== viewTag) {
     return false;
   }

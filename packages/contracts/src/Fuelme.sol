@@ -12,9 +12,7 @@ contract Fuelme is Ownable, EIP712 {
     using SafeERC20 for IUSDC;
 
     bytes32 public constant TYPEHASH =
-        keccak256(
-            "UpdateProfile(bytes key,bytes profile,uint256 nonce)"
-        );
+        keccak256("UpdateProfile(bytes key,bytes profile,uint256 nonce)");
     uint256 public constant FEE_DENOMINATOR = 10000;
     IUSDC public immutable USDC;
 
@@ -99,12 +97,7 @@ contract Fuelme is Ownable, EIP712 {
     ) external {
         require(_username.length > 0, "Invalid username");
         bytes32 structHash = keccak256(
-            abi.encode(
-                TYPEHASH,
-                keccak256(_key),
-                keccak256(_profile),
-                _nonce
-            )
+            abi.encode(TYPEHASH, keccak256(_key), keccak256(_profile), _nonce)
         );
         bytes32 digest = _hashTypedDataV4(structHash);
         address signer = ECDSA.recover(digest, _signature);
@@ -216,10 +209,10 @@ contract Fuelme is Ownable, EIP712 {
     function getAuthorizers(
         uint256 _startIndex,
         uint256 _length
-    ) external view returns (address[] memory addresses, uint256 total) {
-        total = authorizers.length;
+    ) external view returns (address[] memory addresses, bytes[] memory keyOfUsers) {
+        uint256 total = authorizers.length;
         if (_startIndex >= total) {
-            return (new address[](0), total);
+            return (new address[](0), new bytes[](0));
         }
         uint256 endIndex = _startIndex + _length;
         if (endIndex > total) {
@@ -230,6 +223,10 @@ contract Fuelme is Ownable, EIP712 {
         addresses = new address[](_length);
         for (uint256 i = 0; i < _length; i++) {
             addresses[i] = authorizers[_startIndex + i];
+        }
+        keyOfUsers = new bytes[](_length);
+        for (uint256 i = 0; i < _length; i++) {
+            keyOfUsers[i] = keys[authorizedKeys[addresses[i]]];
         }
     }
 }

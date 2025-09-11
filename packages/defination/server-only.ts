@@ -1,4 +1,3 @@
-import "server-only";
 import { createWalletClient, type Hex } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
