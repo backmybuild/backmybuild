@@ -10,8 +10,10 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
       {children}
       <ProgressBar
         color="#ffffff"
-        height="2px"
-        options={{ showSpinner: false }}
+        height="4px"
+        options={{
+          showSpinner: false,
+        }}
         shallowRouting
       />
       <ToastContainer theme="dark" />

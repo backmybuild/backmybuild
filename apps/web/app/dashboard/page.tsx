@@ -459,6 +459,7 @@ const FuelmeDashboardPage = () => {
       console.error(e);
       setOtpError("Invalid OTP.");
     } finally {
+      await loadTxs();
       setIsVerifyingOtp(false);
     }
   };
