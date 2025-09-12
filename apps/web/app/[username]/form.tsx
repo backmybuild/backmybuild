@@ -160,7 +160,7 @@ const DonateForm: React.FC<DonateProps> = ({
         },
       });
 
-      const txHash = await donate(donationInfor, {
+      const txHash = await donate(username, donationInfor, {
         from: address,
         value: parseUnits(amount || "0", 6),
         validAfter: now,
