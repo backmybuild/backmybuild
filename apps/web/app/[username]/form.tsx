@@ -12,6 +12,7 @@ import {
   encodeAbiParameters,
   erc20Abi,
   Hex,
+  hexToBytes,
   keccak256,
   parseAbiParameters,
   parseUnits,
@@ -97,25 +98,13 @@ const DonateForm: React.FC<DonateProps> = ({
         stealthKey.viewingPublicKey
       );
 
-      const encryptedMessage = encryptSymmetric(
-        stealthKey.encryptionPublicKey as string,
-        message
-      );
-      const postMessage = stringToHex(
-        [
-          encryptedMessage.nonce,
-          encryptedMessage.ephemPublicKey,
-          encryptedMessage.ciphertext,
-        ].join("|")
-      );
-
       const now = BigInt(Math.floor(Date.now() / 1000));
 
       const donationInfor = {
         to: newStealthAddress.address,
         viewTag: newStealthAddress.viewTag,
         ephemeralPublicKey: newStealthAddress.ephemeralPublicKey,
-        message: postMessage,
+        message: stringToHex(message),
       };
 
       const donateHash = keccak256(

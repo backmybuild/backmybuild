@@ -557,7 +557,9 @@ const FuelmeDashboardPage = () => {
           <div className="mt-6 sm:mt-8 max-w-lg">
             <h2 className="text-sm text-white/70">Total earned</h2>
             <span className="block text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight bg-clip-text text-transparent bg-[radial-gradient(100%_100%_at_0%_0%,_#fff,_#9be7ff_40%,_#7cfad2_70%,_#ffffff_100%)] drop-shadow-[0_0_25px_rgba(124,250,210,0.25)]">
-              {loadingTxs ? "Loading..." : `${formatUnits(onchainInformation?.balance || 0n, 6)} USDC`}
+              {loadingTxs
+                ? "Loading..."
+                : `${formatUnits(onchainInformation?.balance || 0n, 6)} USDC`}
             </span>
             <div className="mt-2 text-sm text-white/70">
               Across{" "}
@@ -584,6 +586,7 @@ const FuelmeDashboardPage = () => {
                   <th className="text-left font-medium px-4 h-10">Type</th>
                   <th className="text-left font-medium px-4 h-10">Tx Hash</th>
                   <th className="text-right font-medium px-4 h-10">Amount</th>
+                  <th className="text-right font-medium px-4 h-10">Message</th>
                   <th className="text-right font-medium px-4 h-10">Time</th>
                 </tr>
               </thead>
@@ -617,6 +620,9 @@ const FuelmeDashboardPage = () => {
                     </td>
                     <td className="px-4 h-12 text-right align-middle font-medium">
                       {Number(formatUnits(t.amountWei, 6)).toFixed(3)} USDC
+                    </td>
+                    <td className="px-4 h-12 text-right align-middle font-medium">
+                      {t.message ? hexToString(t.message as Hex) : "-"}
                     </td>
                     <td className="h-12 px-4 text-right">
                       {t.createdAt.toLocaleString()}
@@ -844,7 +850,9 @@ const FuelmeDashboardPage = () => {
             </div>
             <div className="mt-3 text-sm">
               <div className="text-white/70">Fee</div>
-              <div className="font-mono break-all">{formatUnits(TRANSFER_FEE, 6)} USDC</div>
+              <div className="font-mono break-all">
+                {formatUnits(TRANSFER_FEE, 6)} USDC
+              </div>
             </div>
           </div>
 
