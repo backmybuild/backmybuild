@@ -16,7 +16,6 @@ import {
   parseAbiParameters,
   parseUnits,
   stringToHex,
-  toHex,
 } from "viem";
 import { encryptSymmetric, generateStealthAddress } from "@fuelme/stealth";
 import { FUELME_ADDRESSES } from "@fuelme/contracts";

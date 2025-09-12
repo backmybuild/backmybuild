@@ -24,6 +24,7 @@ import {
   updateProfile,
   getSpendingAddress,
   getUserBalanceAndTransaction,
+  requestTransferOTP,
 } from "./actions";
 import { LogOut } from "lucide-react";
 import { toast } from "react-toastify";
@@ -40,6 +41,7 @@ import { CHAIN } from "@fuelme/defination";
 
 // Types
 export type TxItem = {
+  type: string;
   txHash: string;
   valueWei: bigint;
   timestamp: Date;
@@ -83,12 +85,6 @@ async function fetchUserProfile(
     socials: profileArray[2] ? profileArray[2].split(",") : [],
     bio: profileArray[3] || "",
   };
-}
-
-// Utilities
-function formatTime(ts: number) {
-  const d = new Date(ts * 1000);
-  return d.toLocaleString();
 }
 
 function trimHash(h: string, left = 6, right = 4) {
@@ -195,14 +191,28 @@ const publicClient = createPublicClient({
   transport: http(),
 });
 
+type OnchainInformation = {
+  balance: bigint;
+  txs: {
+    type: string;
+    txHash: string;
+    address: string;
+    ephemeralPublicKey: string | null;
+    amountWei: bigint;
+    createdAt: Date;
+    message: string | null;
+  }[];
+  totalTxs: number;
+};
+
 // Main Component
 const FuelmeDashboardPage = () => {
   const { status, data } = useSession();
   const router = useRouter();
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
-  const [txs, setTxs] = useState<TxItem[]>([]);
-  const [balance, setBalance] = useState<bigint>(0n);
+  const [onchainInformation, setOnchainInformation] =
+    useState<OnchainInformation | null>(null);
   const [profileStore, setProfileStore] = useState<ProfileStore>({
     isLoading: true,
     profile: {
@@ -220,6 +230,47 @@ const FuelmeDashboardPage = () => {
   const [openProfileModal, setOpenProfileModal] = useState(false);
   const [openSetupModal, setOpenSetupModal] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [openSendModal, setOpenSendModal] = useState(false);
+  const [sendForm, setSendForm] = useState<{ to: string; amount: string }>({
+    to: "",
+    amount: "",
+  });
+  const [openConfirmModal, setOpenConfirmModal] = useState(false);
+  // --- OTP states ---
+  const [openOtpModal, setOpenOtpModal] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [otpChallengeId, setOtpChallengeId] = useState<string | null>(null);
+  const [isRequestingOtp, setIsRequestingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setInterval(() => setResendCooldown((s) => s - 1), 1000);
+    return () => clearInterval(t);
+  }, [resendCooldown]);
+
+  const sendSummary = useMemo(() => {
+    const amt = sendForm.amount?.trim() || "0";
+    const amtDisplay = amt === "" ? "0" : amt;
+    const toShort = sendForm.to ? trimHash(sendForm.to, 6, 6) : "";
+    return { amtDisplay, toShort };
+  }, [sendForm]);
+
+  const sendErrors = useMemo(() => {
+    const errs: string[] = [];
+    if (!sendForm.to || !/^0x[a-fA-F0-9]{40}$/.test(sendForm.to)) {
+      errs.push("Enter a valid EVM address (0x…).");
+    }
+    if (!sendForm.amount || Number(sendForm.amount) <= 0) {
+      errs.push("Amount must be greater than 0.");
+    }
+    if (sendForm.amount && Number.isNaN(Number(sendForm.amount))) {
+      errs.push("Amount must be a number.");
+    }
+    return errs;
+  }, [sendForm]);
 
   // Local editable state for profile modal
   const [form, setForm] = useState<Profile>({ username: "" });
@@ -237,16 +288,8 @@ const FuelmeDashboardPage = () => {
 
   const loadTxs = async () => {
     setLoadingTxs(true);
-    const { balance, txs } = await getUserBalanceAndTransaction();
-    setBalance(balance);
-    setTxs(
-      txs.map((t) => ({
-        txHash: t.txHash,
-        valueWei: t.amountWei,
-        timestamp: t.createdAt,
-        message: t.message,
-      }))
-    );
+    const { balance, txs, totalTxs } = await getUserBalanceAndTransaction();
+    setOnchainInformation({ balance, txs, totalTxs });
     setLoadingTxs(false);
   };
 
@@ -342,6 +385,92 @@ const FuelmeDashboardPage = () => {
     setSaving(false);
   };
 
+  const handleSendUsdc = async () => {
+    // TODO: wire up contract call / wallet flow
+    // You can access: sendForm.to, sendForm.amount (USDC, 6 decimals)
+  };
+
+  const handleOpenConfirm = () => {
+    if (sendErrors.length === 0) setOpenConfirmModal(true);
+  };
+
+  const handleConfirmSend = async () => {
+    // close the review modal and request an OTP
+    setOpenConfirmModal(false);
+    setOtpError(null);
+    setOtpCode("");
+    setIsRequestingOtp(true);
+    try {
+      // include whatever your server needs to bind this OTP to the transfer intent
+      const payload = {
+        to: sendForm.to,
+        amount: sendForm.amount,
+        chainId: CHAIN?.id,
+      };
+      // const { challengeId } = await requestTransferOTP(payload);
+      // setOtpChallengeId(challengeId);
+      setOpenOtpModal(true);
+      setResendCooldown(30); // 30s cooldown before re-send
+      toast.info("OTP sent. Please check your email/app.");
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to request OTP. Please try again.");
+    } finally {
+      setIsRequestingOtp(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otpChallengeId) return;
+    if (!otpCode || otpCode.trim().length < 4) {
+      setOtpError("Enter your OTP code.");
+      return;
+    }
+    setIsVerifyingOtp(true);
+    setOtpError(null);
+    try {
+      // const ok = await verifyTransferOtp(otpChallengeId, otpCode.trim());
+      // if (!ok) {
+      //   setOtpError("Invalid or expired OTP. Please try again.");
+      //   return;
+      // }
+      // OTP OK — perform the real token send here
+      await handleSendUsdc(); // your existing TODO implementation
+      setOpenOtpModal(false);
+      toast.success("Transfer sent ✅");
+    } catch (e) {
+      console.error(e);
+      setOtpError("Failed to verify OTP. Please try again.");
+    } finally {
+      setIsVerifyingOtp(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0) return;
+    if (!sendForm.to || !sendForm.amount) return;
+
+    setIsRequestingOtp(true);
+    setOtpError(null);
+    try {
+      const payload = {
+        to: sendForm.to,
+        amount: sendForm.amount,
+        chainId: CHAIN?.id,
+      };
+      // const { challengeId } = await requestTransferOTP(payload);
+      // setOtpChallengeId(challengeId);
+      setOtpCode("");
+      setResendCooldown(30);
+      toast.info("OTP re-sent.");
+    } catch (e) {
+      console.error(e);
+      setOtpError("Could not resend OTP. Please try later.");
+    } finally {
+      setIsRequestingOtp(false);
+    }
+  };
+
   if (status === "loading" || profileStore.isLoading) {
     return (
       <main className="min-h-[100dvh] bg-black text-white flex items-center justify-center">
@@ -402,17 +531,21 @@ const FuelmeDashboardPage = () => {
             </div>
             <div className="flex items-center gap-2">
               <GhostButton onClick={onOpenProfile}>Update profile</GhostButton>
-              <PrimaryButton onClick={onOpenProfile}>Send USDC</PrimaryButton>
+              <PrimaryButton onClick={() => setOpenSendModal(true)}>
+                Send USDC
+              </PrimaryButton>
             </div>
           </div>
           <div className="mt-6 sm:mt-8 max-w-lg">
             <h2 className="text-sm text-white/70">Total earned</h2>
             <span className="block text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight bg-clip-text text-transparent bg-[radial-gradient(100%_100%_at_0%_0%,_#fff,_#9be7ff_40%,_#7cfad2_70%,_#ffffff_100%)] drop-shadow-[0_0_25px_rgba(124,250,210,0.25)]">
-              {formatUnits(balance, 6)} USDC
+              {formatUnits(onchainInformation?.balance || 0n, 6)} USDC
             </span>
             <div className="mt-2 text-sm text-white/70">
               Across{" "}
-              <span className="font-semibold text-white">{txs.length}</span>{" "}
+              <span className="font-semibold text-white">
+                {onchainInformation?.totalTxs || 0}
+              </span>{" "}
               tips — thank you! 💚
             </div>
           </div>
@@ -430,13 +563,14 @@ const FuelmeDashboardPage = () => {
             <table className="min-w-full text-sm">
               <thead className="bg-white/5 text-white/70">
                 <tr>
-                  <th className="text-left font-medium px-4 h-10">Time</th>
+                  <th className="text-left font-medium px-4 h-10">Type</th>
                   <th className="text-left font-medium px-4 h-10">Tx Hash</th>
                   <th className="text-right font-medium px-4 h-10">Amount</th>
+                  <th className="text-right font-medium px-4 h-10">Time</th>
                 </tr>
               </thead>
               <tbody>
-                {txs.length === 0 && (
+                {onchainInformation?.txs.length === 0 && (
                   <tr>
                     <td
                       colSpan={4}
@@ -446,13 +580,13 @@ const FuelmeDashboardPage = () => {
                     </td>
                   </tr>
                 )}
-                {txs.map((t) => (
+                {onchainInformation?.txs.map((t) => (
                   <tr
                     key={t.txHash}
                     className="border-t border-white/10 hover:bg-white/[.04]"
                   >
-                    <td className="px-4 h-12 align-middle">
-                      {t.timestamp.toLocaleString()}
+                    <td className="px-4 h-12 text-left align-middle font-medium">
+                      {t.type}
                     </td>
                     <td className="px-4 h-12 align-middle">
                       <a
@@ -464,7 +598,10 @@ const FuelmeDashboardPage = () => {
                       </a>
                     </td>
                     <td className="px-4 h-12 text-right align-middle font-medium">
-                      {Number(formatUnits(t.valueWei, 6)).toFixed(3)} USDC
+                      {Number(formatUnits(t.amountWei, 6)).toFixed(3)} USDC
+                    </td>
+                    <td className="h-12 px-4 text-right">
+                      {t.createdAt.toLocaleString()}
                     </td>
                   </tr>
                 ))}
@@ -601,9 +738,169 @@ const FuelmeDashboardPage = () => {
             <GhostButton onClick={() => setOpenProfileModal(false)}>
               Cancel
             </GhostButton>
-            <PrimaryButton onClick={onSaveProfile} disabled={saving}>
+            <PrimaryButton onClick={onSaveProfile} disabled={saving} className="disabled:opacity-50 disabled:cursor-not-allowed">
               {saving ? "Saving…" : "Save changes"}
             </PrimaryButton>
+          </div>
+        </div>
+      </Modal>
+      <Modal
+        open={openSendModal}
+        onClose={() => {
+          setSendForm({ to: "", amount: "" });
+          setOpenSendModal(false)
+        }}
+        title="Send USDC"
+      >
+        <div className="space-y-4">
+          <Field
+            label="Receive address"
+            placeholder="0x…"
+            value={sendForm.to}
+            onChange={(e) =>
+              setSendForm((s) => ({ ...s, to: e.target.value.trim() }))
+            }
+          />
+
+          <div className="space-y-2">
+            <Field
+              label="Amount (USDC)"
+              placeholder="0.00"
+              inputMode="decimal"
+              value={sendForm.amount}
+              onChange={(e) =>
+                setSendForm((s) => ({ ...s, amount: e.target.value }))
+              }
+            />
+          </div>
+
+          {sendErrors.length > 0 && (
+            <div className="rounded-lg border border-amber-400/30 bg-amber-500/10 p-3 text-amber-200 text-sm">
+              {sendErrors.map((e, i) => (
+                <div key={i}>• {e}</div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <GhostButton onClick={() => setOpenSendModal(false)}>
+              Cancel
+            </GhostButton>
+            <PrimaryButton
+              onClick={handleOpenConfirm}
+              disabled={sendErrors.length > 0}
+              className="disabled:opacity-50 disabled:cursor-not-allowed"
+              title={
+                sendErrors.length > 0
+                  ? "Fix the errors above to continue"
+                  : undefined
+              }
+            >
+              Review & Send
+            </PrimaryButton>
+          </div>
+        </div>
+      </Modal>
+      <Modal
+        open={openConfirmModal}
+        onClose={() => setOpenConfirmModal(false)}
+        title="Confirm transfer"
+      >
+        <div className="space-y-4">
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+            <div className="text-sm text-white/70 mb-2">
+              You’re about to send
+            </div>
+            <div className="text-3xl font-extrabold tracking-tight">
+              {sendSummary.amtDisplay}{" "}
+              <span className="text-white/70 text-xl">USDC</span>
+            </div>
+            <div className="mt-3 text-sm">
+              <div className="text-white/70">To</div>
+              <div className="font-mono break-all">{sendForm.to}</div>
+            </div>
+            <div className="mt-3 text-sm text-white/60">
+              Network:{" "}
+              <span className="text-white">{CHAIN?.name ?? "Base"}</span>
+            </div>
+          </div>
+
+          {/* Optional: small disclaimer */}
+          <p className="text-xs text-white/60">
+            Please double-check the address and amount. Crypto transfers are
+            irreversible.
+          </p>
+
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <GhostButton onClick={() => setOpenConfirmModal(false)}>
+              Back
+            </GhostButton>
+            <PrimaryButton onClick={handleConfirmSend}>
+              Confirm & Send
+            </PrimaryButton>
+          </div>
+        </div>
+      </Modal>
+      <Modal
+        open={openOtpModal}
+        onClose={() => {
+          setOtpCode("")
+          setOpenOtpModal(false)
+        }}
+        title="Enter OTP to confirm"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-white/70">
+            We’ve sent a one-time code to your registered destination. Enter it
+            below to finalize the transfer.
+          </p>
+
+          <Field
+            label="OTP Code"
+            placeholder="6-digit code"
+            inputMode="numeric"
+            maxLength={8}
+            value={otpCode}
+            onChange={(e) => {
+              setOtpError(null);
+              setOtpCode(e.target.value.replace(/\s+/g, ""));
+            }}
+          />
+
+          {otpError && (
+            <div className="rounded-lg border border-amber-400/30 bg-amber-500/10 p-3 text-amber-200 text-sm">
+              {otpError}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between">
+            <button
+              className="h-10 px-4 rounded-xl bg-white/5 text-white hover:bg-white/10 border border-white/10 disabled:opacity-50"
+              onClick={handleResendOtp}
+              disabled={isRequestingOtp || resendCooldown > 0}
+              title={
+                resendCooldown > 0
+                  ? `Wait ${resendCooldown}s to resend`
+                  : undefined
+              }
+            >
+              {resendCooldown > 0
+                ? `Resend in ${resendCooldown}s`
+                : "Resend OTP"}
+            </button>
+
+            <div className="flex items-center gap-2">
+              <GhostButton onClick={() => setOpenOtpModal(false)}>
+                Cancel
+              </GhostButton>
+              <PrimaryButton
+                onClick={handleVerifyOtp}
+                disabled={isVerifyingOtp}
+                className="disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isVerifyingOtp ? "Verifying…" : "Verify & Send"}
+              </PrimaryButton>
+            </div>
           </div>
         </div>
       </Modal>

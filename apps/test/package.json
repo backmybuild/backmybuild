@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@fuelme/contracts": "*",
-    "@fuelme/stealth": "*"
+    "@fuelme/stealth": "*",
+    "otplib": "^12.0.1"
   }
 }

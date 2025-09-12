@@ -13,7 +13,7 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { CHAIN, publicClient } from "@fuelme/defination";
-import { ACCOUNT_SEEDS, PRIVATE_KEY } from "@fuelme/defination/server";
+import { ACCOUNT_SEEDS, OPT_SEEDS, PRIVATE_KEY } from "@fuelme/defination/server";
 import { uploadImage } from "../../services/uploadImage";
 import {
   computeViewingKey,
@@ -22,6 +22,7 @@ import {
   STEALTH_SIGN_MESSAGE,
 } from "@fuelme/stealth";
 import prisma from "@fuelme/database";
+import { totp } from "otplib";
 
 export const getSpendingAddress = async (): Promise<Address> => {
   const user = await getServerSession();
@@ -125,6 +126,11 @@ export const getUserBalanceAndTransaction = async () => {
   const txs = await prisma.transaction.findMany({
     where: { authorizedAddress },
     orderBy: { createdAt: "desc" },
+    take: 100
+  });
+
+  const totalTxs = await prisma.transaction.count({
+    where: { authorizedAddress },
   });
 
   const recv = await prisma.transaction.aggregate({
@@ -136,8 +142,22 @@ export const getUserBalanceAndTransaction = async () => {
     balance,
     txs: txs.map((t) => ({ 
       ...t,
-      type: t.type as "WITHDRAW" | "RECEIVE",
+      type: t.type.toString(),
       amountWei: BigInt(t.amountWei.toFixed(0)) 
     })),
+    totalTxs
   };
 };
+
+export const requestTransferOTP = async (receiver: Address, amount: bigint) => {
+  const user = await getServerSession();
+  if (!user?.user?.email) {
+    throw new Error("User not authenticated");
+  }
+  
+  const otpSeeds = hashMessage(user?.user?.email + OPT_SEEDS + receiver + amount.toString());
+
+  const otp = totp.generate(otpSeeds);
+
+  console.log("Generated OTP:", otp);
+}

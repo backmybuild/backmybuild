@@ -35,7 +35,6 @@ const processAnnouncementEvent = async (event: any) => {
 
     for (const [index, address] of authorizeAddresses.entries()) {
       const keyDecoded = hexToString(keys[index]).split("|");
-      console.log(stealthAddress, viewTag, ephemeralPublicKey, amount, message);
       const viewingKey = computeViewingKey(stringToHex(ACCOUNT_SEEDS), address);
       const isOwnerOfStealthAddress = checkStealthAddress(
         stealthAddress,
@@ -44,8 +43,6 @@ const processAnnouncementEvent = async (event: any) => {
         viewingKey.privateKey, // viewingPrivateKey
         toHex(viewTag)
       );
-
-      console.log(isOwnerOfStealthAddress)
 
       if (isOwnerOfStealthAddress) {
         const balance = await publicClient.readContract({
@@ -75,7 +72,11 @@ const processAnnouncementEvent = async (event: any) => {
 
 const processAnnouncementEvents = async (events: any[]) => {
   for (const event of events) {
-    await processAnnouncementEvent(event);
+    try {
+      await processAnnouncementEvent(event);
+    } catch (e) {
+      console.error(e);
+    }
   }
 };
 
@@ -101,7 +102,7 @@ const processRange = async (fromBlock: bigint, blockNumber: bigint) => {
 
 const main = async () => {
   console.log("Starting crawler...");
-  await processRange(30909003n, 30909003n);
+  await processRange(30918328n, 30918527n);
   // let startBlock = await publicClient.getBlockNumber();
   // while (true) {
   //   try {
