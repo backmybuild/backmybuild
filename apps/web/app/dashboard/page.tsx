@@ -882,7 +882,7 @@ const FuelmeDashboardPage = () => {
       >
         <div className="space-y-4">
           <p className="text-sm text-white/70">
-            We’ve sent a one-time code to your registered destination. Enter it
+            We’ve sent a one-time code to your email: <span className="font-semibold">{data?.user?.email}</span>. Enter it
             below to finalize the transfer.
           </p>
 

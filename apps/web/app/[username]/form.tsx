@@ -159,7 +159,7 @@ const DonateForm: React.FC<DonateProps> = ({
 
       toast.success(
         <div>
-          Donation successful{" "}
+          Thank you for supporting{" "}
           <a
             href={CHAIN.blockExplorers.default.url + `/tx/${txHash}`}
             target="_blank"
