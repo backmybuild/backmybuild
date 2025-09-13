@@ -185,7 +185,7 @@ export const getUserBalanceAndTransaction = async () => {
   });
 
   const balances = await publicClient.multicall({
-    contracts: activeAddresses.map((row) => ({
+    contracts: activeAddresses.map((row: any) => ({
       address: USDC_ADDRESS,
       abi: erc20Abi,
       functionName: "balanceOf",
