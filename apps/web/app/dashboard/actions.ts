@@ -2,7 +2,6 @@
 import "server-only";
 import { FUELME_ABI, FUELME_ADDRESSES } from "@fuelme/contracts";
 import { getServerSession } from "next-auth";
-import { Hex } from "thirdweb";
 import {
   Address,
   createWalletClient,
@@ -13,6 +12,7 @@ import {
   http,
   PrivateKeyAccount,
   stringToHex,
+  Hex
 } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import {
