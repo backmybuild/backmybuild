@@ -1,9 +1,8 @@
 "use client";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { signIn, useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import Nav from "../../components/Nav";
 import Logo from "../../components/Logo";
 
 export default function LoginPage() {
@@ -15,7 +14,7 @@ export default function LoginPage() {
     if (status === "authenticated") {
       router.push("/dashboard");
     }
-  }, [status]);
+  }, [status, router]);
 
   const handleGoogle = async () => {
     try {

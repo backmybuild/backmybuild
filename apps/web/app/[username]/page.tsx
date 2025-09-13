@@ -12,8 +12,8 @@ type Props = {
 };
 
 export const generateMetadata = async (
-  { params, searchParams }: Props,
-  parent: ResolvingMetadata
+  { params }: Props,
+  _: ResolvingMetadata
 ): Promise<Metadata> => {
   // read route params
   const { username } = await params;

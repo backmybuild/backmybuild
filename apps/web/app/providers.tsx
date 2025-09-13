@@ -1,4 +1,3 @@
-/* eslint-disable  @typescript-eslint/no-explicit-any */
 "use client";
 import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
 import { SessionProvider } from "next-auth/react";

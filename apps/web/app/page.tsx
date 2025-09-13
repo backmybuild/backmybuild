@@ -1,4 +1,3 @@
-/* eslint-disable  @typescript-eslint/no-explicit-any */
 "use client";
 import type { NextPage } from "next";
 import Link from "next/link";

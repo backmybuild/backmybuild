@@ -12,13 +12,12 @@ import {
   encodeAbiParameters,
   erc20Abi,
   Hex,
-  hexToBytes,
   keccak256,
   parseAbiParameters,
   parseUnits,
   stringToHex,
 } from "viem";
-import { encryptSymmetric, generateStealthAddress } from "@fuelme/stealth";
+import { generateStealthAddress } from "@fuelme/stealth";
 import { FUELME_ADDRESSES } from "@fuelme/contracts";
 import { toast } from "react-toastify";
 import { donate } from "./action";
@@ -31,12 +30,10 @@ const formatEth = (v: string) => {
   return dec ? `${head}.${dec.slice(0, 6)}` : head;
 };
 
-const presets = ["0.5", "1", "5", "10"];
-
 export type Key = {
   spendingPublicKey: Hex;
   viewingPublicKey: Hex;
-  encryptionPublicKey: String;
+  encryptionPublicKey: string;
 };
 
 type DonateProps = {
@@ -158,7 +155,7 @@ const DonateForm: React.FC<DonateProps> = ({
         },
       });
 
-      const txHash = await donate(username, donationInfor, {
+      const txHash = await donate(username.toString(), donationInfor, {
         from: address,
         value: parseUnits(amount || "0", 6),
         validAfter: now,

@@ -2,7 +2,7 @@
 import "server-only";
 import { FUELME_ABI, FUELME_ADDRESSES } from "@fuelme/contracts";
 import prisma from "@fuelme/database";
-import { CHAIN, publicClient, TRANSFER_FEE } from "@fuelme/defination";
+import { CHAIN, publicClient } from "@fuelme/defination";
 import { ACCOUNT_SEEDS, PRIVATE_KEY } from "@fuelme/defination/server";
 import { checkStealthAddress, computeViewingKey } from "@fuelme/stealth";
 import {

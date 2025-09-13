@@ -11,7 +11,6 @@ import {
   getAddress,
   hashMessage,
   http,
-  parseUnits,
   PrivateKeyAccount,
   stringToHex,
 } from "viem";

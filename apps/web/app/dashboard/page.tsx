@@ -4,24 +4,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Address,
-  createPublicClient,
-  formatEther,
   formatUnits,
   getAddress,
-  hashMessage,
   Hex,
   hexToString,
-  http,
   parseUnits,
   stringToHex,
 } from "viem";
 import Link from "next/link";
 import Image from "next/image";
-import Logo from "../../components/Logo";
-import { baseSepolia } from "viem/chains";
 import { FUELME_ABI, FUELME_ADDRESSES } from "@fuelme/contracts";
 import { signOut, useSession } from "next-auth/react";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   updateProfile,
   getSpendingAddress,
@@ -29,11 +23,20 @@ import {
   requestTransferOTP,
   handleSendUSDC,
 } from "./actions";
-import { LogOut } from "lucide-react";
 import { toast } from "react-toastify";
-import { CHAIN, TRANSFER_FEE } from "@fuelme/defination";
+import { CHAIN, TRANSFER_FEE, publicClient } from "@fuelme/defination";
 import { OtpInput } from "./OtpInput";
 import Nav from "../../components/Nav";
+
+const fileToDataUrl = (file: File): Promise<string> => {
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload = () => res(reader.result as string);
+    reader.onerror = rej;
+    reader.readAsDataURL(file);
+  });
+}
+
 
 // ------------------------------------------------------------
 // Fuelme — Dashboard Page (rev)
@@ -70,7 +73,7 @@ async function fetchUserProfile(
   address?: `0x${string}`
 ): Promise<Profile | null> {
   const profileData = (await publicClient?.readContract({
-    address: FUELME_ADDRESSES[chain.id] as Address,
+    address: FUELME_ADDRESSES[CHAIN.id] as Address,
     abi: FUELME_ABI,
     functionName: "getProfileByAddress",
     args: [address],
@@ -190,12 +193,6 @@ function GhostButton({
   );
 }
 
-const chain = baseSepolia;
-const publicClient = createPublicClient({
-  chain,
-  transport: http(),
-});
-
 type OnchainInformation = {
   balance: bigint;
   txs: {
@@ -248,7 +245,6 @@ const FuelmeDashboardPage = () => {
   const [isRequestingOtp, setIsRequestingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
-  const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
     if (resendCooldown <= 0) return;
@@ -366,7 +362,7 @@ const FuelmeDashboardPage = () => {
     setSaving(true);
     try {
       const profile = (await publicClient?.readContract({
-        address: FUELME_ADDRESSES[chain.id] as Address,
+        address: FUELME_ADDRESSES[CHAIN.id] as Address,
         abi: FUELME_ABI,
         functionName: "getProfile",
         args: [stringToHex(pendingUsername)],
@@ -692,9 +688,7 @@ const FuelmeDashboardPage = () => {
                 onChange={async (e) => {
                   const f = e.target.files?.[0];
                   if (!f) return;
-                  const dataUrl = await (
-                    await import("../../services")
-                  ).fileToDataUrl(f);
+                  const dataUrl = await fileToDataUrl(f);
                   setForm((s) => ({ ...s, avatarUrl: dataUrl }));
                 }}
               />

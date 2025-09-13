@@ -6,7 +6,7 @@ import { NextPage } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Hex, hexToString, stringToHex } from "viem";
 import {
   darkTheme,
@@ -15,10 +15,6 @@ import {
 } from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from "wagmi";
 import {
-  mainnet,
-  polygon,
-  optimism,
-  arbitrum,
   base,
   baseSepolia,
 } from "wagmi/chains";
@@ -144,7 +140,7 @@ const DonationInfo: NextPage = () => {
           key: {
             spendingPublicKey: keyArray[0] as Hex,
             viewingPublicKey: keyArray[1] as Hex,
-            encryptionPublicKey: keyArray[2] as String,
+            encryptionPublicKey: keyArray[2] as string,
           },
         });
         setIsLoading(false);
