@@ -1,4 +1,4 @@
-const Logo = ({ size = 20 }: { size?: number }) => (
+const Logo = ({ size = 30 }: { size?: number }) => (
   <div className="relative" style={{ width: size, height: size }}>
     <svg viewBox="0 0 24 24" className="w-full h-full">
       <defs>
@@ -8,12 +8,33 @@ const Logo = ({ size = 20 }: { size?: number }) => (
           <stop offset="100%" stopColor="#22d3ee" />
         </linearGradient>
       </defs>
-      <rect x="2" y="2" width="20" height="20" rx="5" fill="url(#g1)" />
+      {/* Rounded square background */}
+      <rect x="2" y="2" width="20" height="20" rx="6" fill="url(#g1)" />
+
+      {/* Lock body */}
+      <rect
+        x="8"
+        y="11"
+        width="8"
+        height="6"
+        rx="1.5"
+        fill="white"
+        opacity="0.9"
+      />
+
+      {/* Lock shackle */}
       <path
-        d="M7 9h10M7 12h6M7 15h10"
-        stroke="black"
+        d="M10 11V9.5a2 2 0 0 1 4 0V11"
+        stroke="white"
         strokeWidth="1.5"
+        fill="none"
         strokeLinecap="round"
+      />
+
+      {/* Heart inside lock */}
+      <path
+        d="M12 14.5l-0.7-0.7a1.5 1.5 0 1 1 2.1-2.1l0.6 0.6 0.6-0.6a1.5 1.5 0 1 1 2.1 2.1l-0.7 0.7-2 2-2-2z"
+        fill="#ef4444"
       />
     </svg>
   </div>

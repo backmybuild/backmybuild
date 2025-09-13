@@ -59,6 +59,7 @@ const DonateForm: React.FC<DonateProps> = ({
   const [isSending, setIsSending] = useState(false);
   const { signTypedDataAsync } = useSignTypedData();
   const amt = useMemo(() => (amount ? Number(amount) : NaN), [amount]);
+  const [isCustom, setIsCustom] = useState(false);
   const isValid = !Number.isNaN(amt) && amt > 0;
 
   const [message, setMessage] = useState(""); // added
@@ -79,11 +80,19 @@ const DonateForm: React.FC<DonateProps> = ({
     }
   }, [isConnected, address]);
 
+  useEffect(() => {
+    if (isCustom) setAmount("");
+  }, [isCustom]);
+
   const onDonate = async () => {
+    if (parseUnits(amount || "0", 6) > balance!) {
+      toast.warning("Insufficient balance.");
+      return;
+    }
     setIsSending(true);
     try {
       if (!isValid) {
-        toast.warning("Please enter a valid amount.");
+        toast.warn("Please enter a valid amount.");
         setIsSending(false);
         return;
       }
@@ -199,32 +208,28 @@ const DonateForm: React.FC<DonateProps> = ({
             ${val}
           </button>
         ))}
-        <button
-          type="button"
-          onClick={() => setAmount("")}
-          className={`flex-1 rounded-2xl border border-white/10 px-4 py-3 text-sm font-medium transition
-        ${amount === "" ? "bg-white text-black" : "bg-black/40 text-white/80 hover:bg-white/10"}`}
-        >
-          Custom
-        </button>
+        {isCustom ? (
+          <div className="w-[120px] relative">
+            <input
+              type="number"
+              autoFocus
+              placeholder="Custom"
+              value={amount}
+              onChange={(e) => setAmount(formatEth(e.target.value))}
+              className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white focus:outline-none text-center"
+            />
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setIsCustom(true)}
+            className="w-[120px] rounded-2xl border border-white/10 px-4 py-3 text-sm font-medium transition
+      bg-black/40 text-white/80 hover:bg-white/10"
+          >
+            Custom
+          </button>
+        )}
       </div>
-
-      {/* Custom input */}
-      {amount === "" && (
-        <div className="relative">
-          <input
-            id="amount"
-            type="number"
-            placeholder="Enter amount"
-            value={amount}
-            onChange={(e) => setAmount(formatEth(e.target.value))}
-            className="w-full rounded-2xl border border-white/10 bg-black/40 px-5 py-4 pr-20 text-lg focus:outline-none"
-          />
-          <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm text-white/70">
-            USDC
-          </span>
-        </div>
-      )}
 
       {/* Balance */}
       <div className="mt-2 text-right text-xs text-white/70">

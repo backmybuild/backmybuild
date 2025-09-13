@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Fuel Me",
-  description: "A privacy platfrom.",
+  title: "Stealth Giving",
+  description: "A better way to give crypto to anyone, anywhere.",
   icons: {
     icon: "/logo.svg"
   }
