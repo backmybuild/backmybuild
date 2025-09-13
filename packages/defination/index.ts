@@ -8,6 +8,7 @@ const CHAIN = baseSepolia; // For testing purpose, always use Sepolia
 const USDC_ADDRESS = process.env.USDC_ADDRESS as Hex || "0x036CbD53842c5426634e7929541eC2318f3dCF7e"; // Sepolia USDC
 const TRANSFER_FEE = parseUnits("0.01", 6)
 const FEE_ADDRESS: Address = "0x704edAab548655c2958D8A7fe58642b31dB4FB28"
+const REQUEST_VIEWING_KEY_MESSAGE = "Request viewing key"
 
 const publicClient = createPublicClient({
   chain: CHAIN,
@@ -19,6 +20,7 @@ export {
   TRANSFER_FEE,
   FEE_ADDRESS,
   CHAIN,
+  REQUEST_VIEWING_KEY_MESSAGE,
   USDC_ADDRESS,
   publicClient,
 }

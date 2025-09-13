@@ -19,6 +19,7 @@ import {
   CHAIN,
   FEE_ADDRESS,
   publicClient,
+  REQUEST_VIEWING_KEY_MESSAGE,
   TRANSFER_FEE,
   USDC_ADDRESS,
 } from "@fuelme/defination";
@@ -34,6 +35,7 @@ import {
   computeViewingKey,
   generateSpendingKeyFromSignature,
   getEncryptionPublicKey,
+  Key,
   STEALTH_SIGN_MESSAGE,
   StealthKey,
 } from "@fuelme/stealth";
@@ -54,6 +56,25 @@ export const getSpendingAddress = async (): Promise<Address> => {
   const account = privateKeyToAccount(userPrivateKey);
   return account.address;
 };
+
+export const getViewingKey = async (address: Address, signature: Hex): Promise<Key> => {
+  const isValidSignature = await publicClient.verifyMessage({
+    address: address,
+    signature,
+    message: REQUEST_VIEWING_KEY_MESSAGE,
+  })
+
+  if (!isValidSignature) {
+    throw new Error("Invalid signature");
+  }
+
+  const viewingKey = computeViewingKey(
+    stringToHex(ACCOUNT_SEEDS),
+    getAddress(address)
+  );
+  
+  return viewingKey
+}
 
 const getStealtKey = async (
   authorizedAccount: PrivateKeyAccount

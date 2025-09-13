@@ -3,7 +3,6 @@ import "@rainbow-me/rainbowkit/styles.css";
 import { FUELME_ABI, FUELME_ADDRESSES } from "@fuelme/contracts";
 import { CHAIN, publicClient } from "@fuelme/defination";
 import { NextPage } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";

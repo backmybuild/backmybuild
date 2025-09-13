@@ -1,17 +1,23 @@
+"use client";
 import type { NextPage } from "next";
 import Link from "next/link";
-
-// If you have these in your codebase, you can keep them.
-// Otherwise, feel free to remove BackgroundDecor / GlobalKeyframes and the <Logo /> usage.
 import BackgroundDecor from "../components/BackgroundDecor";
 import GlobalKeyframes from "../components/GlobalKeyframes";
 import Logo from "../components/Logo";
 import Nav from "../components/Nav";
-
-// Optional: appkit wallet button (remove if unused)
-// import { useAppKit } from "@reown/appkit/react";
+import { useAccount } from "wagmi";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 
 const LandingPage: NextPage = () => {
+  const { openConnectModal } = useConnectModal();
+  const { address, isConnected } = useAccount();
+
+  const handleCreatePageClick = async () => {
+    if ((!isConnected || !address) && openConnectModal) {
+      openConnectModal();
+    }
+  };
+
   return (
     <main
       className={`min-h-screen bg-black text-white transition-opacity duration-300`}
@@ -62,12 +68,12 @@ const LandingPage: NextPage = () => {
                 wallet drops.
               </p>
               <div className="mt-6 flex flex-wrap items-center gap-3">
-                <Link
-                  href="/login"
+                <button
+                  onClick={handleCreatePageClick}
                   className="rounded-full bg-white text-black px-5 py-2.5 text-sm font-semibold shadow hover:opacity-90"
                 >
                   Create your page
-                </Link>
+                </button>
                 <a
                   href="#privacy"
                   className="rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm hover:bg-white/10"
@@ -308,14 +314,6 @@ const LandingPage: NextPage = () => {
               No. You control your keys and when you claim funds.
             </p>
           </div>
-        </div>
-        <div className="mt-8">
-          <Link
-            href="/login"
-            className="rounded-full bg-white text-black px-5 py-2.5 text-sm font-semibold shadow hover:opacity-90"
-          >
-            Create your page
-          </Link>
         </div>
       </section>
 

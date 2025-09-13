@@ -14,7 +14,6 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { FUELME_ABI, FUELME_ADDRESSES } from "@fuelme/contracts";
-import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
   updateProfile,
@@ -22,11 +21,30 @@ import {
   getUserBalanceAndTransaction,
   requestTransferOTP,
   handleSendUSDC,
+  getViewingKey,
 } from "./actions";
 import { toast } from "react-toastify";
-import { CHAIN, TRANSFER_FEE, publicClient } from "@fuelme/defination";
+import {
+  CHAIN,
+  REQUEST_VIEWING_KEY_MESSAGE,
+  TRANSFER_FEE,
+  publicClient,
+} from "@fuelme/defination";
 import { OtpInput } from "./opt-input";
 import Nav from "../../components/Nav";
+import { ConnectButton, useConnectModal } from "@rainbow-me/rainbowkit";
+import {
+  useAccount,
+  useBalance,
+  useSignMessage,
+  useWriteContract,
+} from "wagmi";
+import {
+  generateSpendingKeyFromSignature,
+  getEncryptionPublicKey,
+  STEALTH_SIGN_MESSAGE,
+} from "@fuelme/stealth";
+import { privateKeyToAccount } from "viem/accounts";
 
 const fileToDataUrl = (file: File): Promise<string> => {
   return new Promise((res, rej) => {
@@ -35,8 +53,7 @@ const fileToDataUrl = (file: File): Promise<string> => {
     reader.onerror = rej;
     reader.readAsDataURL(file);
   });
-}
-
+};
 
 // ------------------------------------------------------------
 // Fuelme — Dashboard Page (rev)
@@ -209,18 +226,21 @@ type OnchainInformation = {
 
 // Main Component
 const FuelmeDashboardPage = () => {
-  const { status, data } = useSession();
   const router = useRouter();
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
+  const { address, isConnected } = useAccount();
+  const { openConnectModal } = useConnectModal();
+  const { signMessageAsync } = useSignMessage();
+  const { writeContractAsync } = useWriteContract();
   const [onchainInformation, setOnchainInformation] =
     useState<OnchainInformation | null>(null);
   const [profileStore, setProfileStore] = useState<ProfileStore>({
     isLoading: true,
     profile: {
       username: "",
-      fullname: data?.user?.name || "",
-      avatarUrl: data?.user?.image || "",
+      fullname: "",
+      avatarUrl: "",
       bio: "",
       socials: [],
     },
@@ -247,10 +267,12 @@ const FuelmeDashboardPage = () => {
   const [resendCooldown, setResendCooldown] = useState(0);
 
   useEffect(() => {
-    if (resendCooldown <= 0) return;
-    const t = setInterval(() => setResendCooldown((s) => s - 1), 1000);
-    return () => clearInterval(t);
-  }, [resendCooldown]);
+    if (!isConnected && openConnectModal) {
+      openConnectModal();
+    } else if (isConnected && address) {
+      loadProfile(address);
+    }
+  }, [isConnected, address]);
 
   useEffect(() => {
     if (!openSendModal) setSendForm({ to: "", amount: "" });
@@ -291,9 +313,9 @@ const FuelmeDashboardPage = () => {
   // Local editable state for profile modal
   const [form, setForm] = useState<Profile>({ username: "" });
 
-  const loadProfile = async () => {
-    const spendingAddress: Address = await getSpendingAddress();
-    const profile = await fetchUserProfile(spendingAddress);
+  const loadProfile = async (address: Address) => {
+    if (!address) return;
+    const profile = await fetchUserProfile(address);
     if (!profile?.username) {
       setOpenSetupModal(true);
     } else {
@@ -309,15 +331,6 @@ const FuelmeDashboardPage = () => {
     setLoadingTxs(false);
   };
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login");
-    } else if (status === "authenticated") {
-      loadProfile();
-      loadTxs();
-    }
-  }, [status]);
-
   const onOpenProfile = () => {
     if (profile) setForm(profile);
     setOpenProfileModal(true);
@@ -326,28 +339,28 @@ const FuelmeDashboardPage = () => {
   const onSaveProfile = async () => {
     setSaving(true);
     try {
-      const txHash = await updateProfile(
-        form.username,
-        form.fullname || "",
-        form.avatarUrl || "",
-        form.bio || "",
-        form.socials || []
-      );
-      if (txHash) {
-        toast.success(
-          <div>
-            Profile updated
-            <a
-              href={CHAIN.blockExplorers.default.url + `/tx/${txHash}`}
-              target="_blank"
-              className="underline decoration-dotted hover:opacity-80 ml-2"
-            >
-              View on Explorer
-            </a>
-          </div>
-        );
-        await loadProfile();
-      }
+      // const txHash = await updateProfile(
+      //   form.username,
+      //   form.fullname || "",
+      //   form.avatarUrl || "",
+      //   form.bio || "",
+      //   form.socials || []
+      // );
+      // if (txHash) {
+      //   toast.success(
+      //     <div>
+      //       Profile updated
+      //       <a
+      //         href={CHAIN.blockExplorers.default.url + `/tx/${txHash}`}
+      //         target="_blank"
+      //         className="underline decoration-dotted hover:opacity-80 ml-2"
+      //       >
+      //         View on Explorer
+      //       </a>
+      //     </div>
+      //   );
+      //   await loadProfile(address as Address);
+      // }
       setOpenProfileModal(false);
     } catch (e) {
       console.error(e);
@@ -356,9 +369,104 @@ const FuelmeDashboardPage = () => {
     setSaving(false);
   };
 
+  const updateProfile = async (profile: Profile) => {
+    const authorizedSignature = await signMessageAsync({
+      message: STEALTH_SIGN_MESSAGE,
+    });
+
+    const spendingKey = generateSpendingKeyFromSignature(authorizedSignature);
+    const authorizeAccount = privateKeyToAccount(spendingKey.privateKey);
+    const requestViewingKeySignature = await authorizeAccount.signMessage({
+      message: REQUEST_VIEWING_KEY_MESSAGE,
+    });
+
+    const viewingKey = await getViewingKey(
+      authorizeAccount.address,
+      requestViewingKeySignature
+    );
+
+    const encryptionPublicKey = getEncryptionPublicKey(
+      spendingKey.privateKey.slice(2)
+    );
+
+    const key = stringToHex(
+      [
+        spendingKey.publicKey,
+        viewingKey.publicKey,
+        encryptionPublicKey,
+        authorizeAccount.address,
+      ].join("|")
+    );
+    const profileEncoded = stringToHex(
+      [
+        profile.fullname,
+        profile.avatarUrl,
+        profile.socials?.join(",") || "",
+        profile.bio || "",
+      ].join("|")
+    );
+    const nonce = BigInt(new Date().valueOf());
+    const createProfileSignature = await authorizeAccount.signTypedData({
+      domain: {
+        name: "FuelMe",
+        version: "1",
+        chainId: CHAIN.id,
+        verifyingContract: FUELME_ADDRESSES[CHAIN.id] as Address,
+      },
+      types: {
+        UpdateProfile: [
+          { name: "key", type: "bytes" },
+          { name: "profile", type: "bytes" },
+          { name: "nonce", type: "uint256" },
+        ],
+      },
+      primaryType: "UpdateProfile",
+      message: {
+        key: key,
+        profile: profileEncoded,
+        nonce: nonce,
+      },
+    });
+
+    const txHash = await writeContractAsync({
+      abi: FUELME_ABI,
+      address: FUELME_ADDRESSES[CHAIN.id] as Address,
+      functionName: "updateProfile",
+      args: [
+        stringToHex(profile.username),
+        key,
+        profileEncoded,
+        nonce,
+        createProfileSignature,
+      ],
+      gas: 1_000_000n,
+    });
+
+    const result = await publicClient.waitForTransactionReceipt({
+      hash: txHash,
+    });
+
+    if (result.status === "success") {
+      toast.success(
+        <div>
+          Profile updated
+          <a
+            href={CHAIN.blockExplorers.default.url + `/tx/${txHash}`}
+            target="_blank"
+            className="underline decoration-dotted hover:opacity-80 ml-2"
+          >
+            View on Explorer
+          </a>
+        </div>
+      );
+      return txHash;
+    } else {
+      toast.error("Transaction failed");
+    }
+  };
+
   const onClaimUsername = async () => {
     if (!pendingUsername) return;
-    if (!data?.user) return;
     setSaving(true);
     try {
       const profile = (await publicClient?.readContract({
@@ -371,28 +479,8 @@ const FuelmeDashboardPage = () => {
       if (profile[0] != "0x") {
         setUsernamWarning("Username is already taken");
       } else {
-        const txHash = await updateProfile(
-          pendingUsername,
-          data?.user?.name || "",
-          data?.user?.image || "",
-          "",
-          ["https://fuelme.fun/" + pendingUsername]
-        );
-        if (txHash) {
-          toast.success(
-            <div>
-              Profile updated
-              <a
-                href={CHAIN.blockExplorers.default.url + `/tx/${txHash}`}
-                target="_blank"
-                className="underline decoration-dotted hover:opacity-80 ml-2"
-              >
-                View on Explorer
-              </a>
-            </div>
-          );
-          await loadProfile();
-        }
+        await updateProfile({ username: pendingUsername });
+        setOpenSetupModal(false);
       }
     } catch (e) {
       console.error(e);
@@ -487,29 +575,10 @@ const FuelmeDashboardPage = () => {
     }
   };
 
-  if (status === "loading" || profileStore.isLoading) {
-    return (
-      <main className="min-h-[100dvh] bg-black text-white flex items-center justify-center">
-        Loading…
-      </main>
-    );
-  }
-
   return (
     <main className="min-h-[100dvh] bg-black text-white">
       <Nav>
-        <GhostButton
-          onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex items-center justify-center rounded-full bg-blue-200 text-black shadow transition hover:opacity-90 text-sm"
-        >
-          <Image
-            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-            alt="Google"
-            width={15}
-            height={15}
-          />&nbsp;
-          Sign out
-        </GhostButton>
+        <ConnectButton />
       </Nav>
       <div className="mx-auto max-w-6xl px-4 py-6 space-y-6">
         {/* HERO — Total Earned only */}
@@ -647,11 +716,12 @@ const FuelmeDashboardPage = () => {
           <div className="flex items-center justify-end gap-2 pt-2">
             <PrimaryButton
               onClick={onClaimUsername}
+              className="disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={
-                pendingUsername === null || pendingUsername.trim() === ""
+                pendingUsername === null || pendingUsername.trim() === "" || saving
               }
             >
-              Claim Your Username
+              {saving ? "Saving…" : "Claim username"}
             </PrimaryButton>
           </div>
         </div>
@@ -873,12 +943,6 @@ const FuelmeDashboardPage = () => {
         title="Enter OTP to confirm"
       >
         <div className="space-y-4">
-          <p className="text-sm text-white/70">
-            We’ve sent a one-time code to your email:{" "}
-            <span className="font-semibold">{data?.user?.email}</span>. Enter it
-            below to finalize the transfer.
-          </p>
-
           <OtpInput
             value={otpCode}
             onChange={(v) => {
