@@ -14,7 +14,6 @@ const publicClient = createPublicClient({
   transport: http()
 })
 
-
 export {
   // IS_PRODUCTION,
   TRANSFER_FEE,

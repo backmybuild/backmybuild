@@ -7,9 +7,11 @@ import {
   Address,
   createWalletClient,
   erc20Abi,
+  formatUnits,
   getAddress,
   hashMessage,
   http,
+  parseUnits,
   PrivateKeyAccount,
   stringToHex,
 } from "viem";
@@ -25,6 +27,7 @@ import {
   ACCOUNT_SEEDS,
   OPT_SEEDS,
   PRIVATE_KEY,
+  mailer,
 } from "@fuelme/defination/server";
 import { uploadImage } from "../../services/uploadImage";
 import {
@@ -210,11 +213,46 @@ export const requestTransferOTP = async (receiver: Address, amount: bigint) => {
   if (!user?.user?.email) {
     throw new Error("User not authenticated");
   }
+
   const otpSeeds = hashMessage(
     user?.user?.email + OPT_SEEDS + receiver + amount.toString()
   );
   const otp = totp.generate(otpSeeds);
-  console.log("Generated OTP:", otp);
+  const formattedAmount = formatUnits(amount, 6); // assume USDC (6 decimals)
+
+  const subject = "Your Stealth.Giving transfer OTP";
+  const text = `Your OTP is: ${otp}
+  
+It expires in  5 minutes.  
+Receiver: ${receiver}  
+Amount: ${formattedAmount}  
+
+If you didn’t request this, ignore this email.`;
+
+  const html = `
+    <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial">
+      <p style="margin:0 0 16px">Use this code to confirm your withdrawal:</p>
+      <div style="font-size:28px;font-weight:700;letter-spacing:3px;
+                  padding:12px 16px;border:1px solid #e5e7eb;border-radius:12px;
+                  display:inline-block">
+        ${otp}
+      </div>
+      <p style="margin:16px 0 8px;color:#6b7280">Expires in 30 seconds.</p>
+
+      <hr style="margin:20px 0;border:none;border-top:1px solid #e5e7eb" />
+
+      <p style="margin:0 0 6px"><strong>Receiver:</strong> ${receiver}</p>
+      <p style="margin:0 0 6px"><strong>Amount:</strong> ${formattedAmount} USDC</p>
+    </div>
+  `;
+
+  return mailer.sendMail({
+    from: process.env.SMTP_FROM!,
+    to: user.user.email,
+    subject,
+    text,
+    html,
+  });
 };
 
 export const calculateTransferParams = async (

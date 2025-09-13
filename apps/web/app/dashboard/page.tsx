@@ -417,8 +417,7 @@ const FuelmeDashboardPage = () => {
         parseUnits(sendForm.amount, 6)
       );
       setOpenOtpModal(true);
-      setResendCooldown(30); // 30s cooldown before re-send
-      toast.info("OTP sent. Please check your email/app.");
+      setResendCooldown(60 * 5); // 5 minutes cooldown
     } catch (e) {
       console.error(e);
       toast.error("Failed to request OTP. Please try again.");
@@ -480,7 +479,7 @@ const FuelmeDashboardPage = () => {
         getAddress(sendForm.to),
         parseUnits(sendForm.amount, 6)
       );
-      setResendCooldown(30);
+      setResendCooldown(60 * 5); // 5 minutes cooldown
       toast.info("OTP re-sent.");
     } catch (e) {
       console.error(e);
@@ -543,7 +542,7 @@ const FuelmeDashboardPage = () => {
                     target="_blank"
                     className="underline decoration-dotted hover:opacity-80"
                   >
-                    https://fuelme.fun/{profile?.username || "user"}
+                    https://stealth.giving/{profile?.username || "user"}
                   </Link>
                 </div>
               </div>
@@ -555,20 +554,16 @@ const FuelmeDashboardPage = () => {
               </PrimaryButton>
             </div>
           </div>
-          <div className="mt-6 sm:mt-8 max-w-lg">
-            <h2 className="text-sm text-white/70">Total earned</h2>
+          <div className="mt-6 sm:mt-3 max-w-lg">
+            <h2 className="text-sm text-white/70">Total Balance</h2>
             <span className="block text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight bg-clip-text text-transparent bg-[radial-gradient(100%_100%_at_0%_0%,_#fff,_#9be7ff_40%,_#7cfad2_70%,_#ffffff_100%)] drop-shadow-[0_0_25px_rgba(124,250,210,0.25)]">
               {loadingTxs
                 ? "Loading..."
                 : `${formatUnits(onchainInformation?.balance || 0n, 6)} USDC`}
             </span>
-            <div className="mt-2 text-sm text-white/70">
-              Across{" "}
-              <span className="font-semibold text-white">
-                {onchainInformation?.totalTxs || 0}
-              </span>{" "}
-              tips — thank you! 💚
-            </div>
+          </div>
+          <div className="mt-2 text-sm text-white/70">
+            You do so well, keep it up! 🚀
           </div>
         </section>
 
@@ -867,8 +862,12 @@ const FuelmeDashboardPage = () => {
             <GhostButton onClick={() => setOpenConfirmModal(false)}>
               Back
             </GhostButton>
-            <PrimaryButton onClick={handleConfirmSend}>
-              Confirm & Send
+            <PrimaryButton
+              onClick={handleConfirmSend}
+              disabled={isRequestingOtp}
+              className="disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isRequestingOtp ? "Sending..." : "Confirm & Send"}
             </PrimaryButton>
           </div>
         </div>
@@ -882,7 +881,8 @@ const FuelmeDashboardPage = () => {
       >
         <div className="space-y-4">
           <p className="text-sm text-white/70">
-            We’ve sent a one-time code to your email: <span className="font-semibold">{data?.user?.email}</span>. Enter it
+            We’ve sent a one-time code to your email:{" "}
+            <span className="font-semibold">{data?.user?.email}</span>. Enter it
             below to finalize the transfer.
           </p>
 

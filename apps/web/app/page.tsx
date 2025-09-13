@@ -13,7 +13,7 @@ import Logo from "../components/Logo";
 // Optional: appkit wallet button (remove if unused)
 // import { useAppKit } from "@reown/appkit/react";
 
-const FuelMeLanding: NextPage = () => {
+const LandingPage: NextPage = () => {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -27,7 +27,7 @@ const FuelMeLanding: NextPage = () => {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <Logo />
-            <span className="font-semibold tracking-wide">Fuel Me</span>
+            <span className="font-semibold tracking-wide">Stealth.Giving</span>
           </Link>
           <div className="hidden sm:flex items-center gap-4 text-sm">
             <a href="#how" className="hover:opacity-90 text-white/80">How it works</a>
@@ -47,10 +47,10 @@ const FuelMeLanding: NextPage = () => {
           <div className="mt-6 grid gap-6 lg:grid-cols-2 lg:items-center">
             <div>
               <h1 className="text-4xl sm:text-5xl font-extrabold leading-tight">
-                Fuel creators with <span className="bg-gradient-to-r from-emerald-300 via-cyan-300 to-blue-400 bg-clip-text text-transparent">private ETH tips</span>
+                Support creators with <span className="bg-gradient-to-r from-emerald-300 via-cyan-300 to-blue-400 bg-clip-text text-transparent">private USDC tips</span>
               </h1>
               <p className="mt-4 text-white/70 text-lg">
-                Fuel Me lets anyone donate on Base while keeping recipient addresses private. Set up a page, share it, and receive support via stealth addresses — no doxxing, no awkward wallet drops.
+                Stealth.Giving lets anyone donate on Base while keeping recipient addresses private. Set up a page, share it, and receive support via stealth addresses — no doxxing, no awkward wallet drops.
               </p>
               <div className="mt-6 flex flex-wrap items-center gap-3">
                 <Link href="/login" className="rounded-full bg-white text-black px-5 py-2.5 text-sm font-semibold shadow hover:opacity-90">Create your page</Link>
@@ -68,13 +68,13 @@ const FuelMeLanding: NextPage = () => {
             <div className="relative">
               <div className="rounded-2xl bg-white/5 backdrop-blur p-5 ring-1 ring-white/10">
                 <div className="rounded-xl bg-black p-4 border border-white/10">
-                  <div className="text-sm text-white/70">fuelme.eth.link/</div>
+                  <div className="text-sm text-white/70">stealt.giving/</div>
                   <h3 className="text-2xl font-bold mt-1">your-name</h3>
-                  <p className="mt-2 text-white/70 text-sm">“Thanks for fueling my work! Your tip helps me keep building.”</p>
+                  <p className="mt-2 text-white/70 text-sm">“Thanks for supporting my work! Your tip helps me keep building.”</p>
                   <div className="mt-4 grid gap-2">
                     <button className="rounded-lg bg-white/10 hover:bg-white/15 px-4 py-2 text-left">
                       <div className="text-xs text-white/60">Suggested</div>
-                      <div className="text-lg font-semibold">0.01 ETH</div>
+                      <div className="text-lg font-semibold">10 USDC</div>
                     </button>
                     <button className="rounded-lg bg-white text-black px-4 py-2 font-semibold hover:opacity-90">Send tip privately</button>
                   </div>
@@ -143,7 +143,7 @@ const FuelMeLanding: NextPage = () => {
             <div className="flex-1">
               <h2 className="text-2xl sm:text-3xl font-extrabold">Privacy by default</h2>
               <p className="mt-2 text-white/70">
-                Fuel Me uses stealth address technology so your public address stays private. When someone sends you ETH, a unique one‑time address is generated. You can claim funds from your wallet without revealing your main address.
+              Stealth.Giving uses stealth address technology so your public address stays private. When someone sends you ETH, a unique one‑time address is generated. You can claim funds from your wallet without revealing your main address.
               </p>
               <ul className="mt-4 grid gap-2 text-sm text-white/80 list-disc list-inside">
                 <li>No public receiving address on your page</li>
@@ -217,7 +217,7 @@ const FuelMeLanding: NextPage = () => {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-white/60">
           <div className="flex items-center gap-2">
             <Logo />
-            <span>Fuel Me</span>
+            <span>Stealth.Giving</span>
           </div>
           <div className="flex items-center gap-4">
             <a href="#privacy" className="hover:opacity-90">Privacy</a>
@@ -230,4 +230,4 @@ const FuelMeLanding: NextPage = () => {
   );
 };
 
-export default FuelMeLanding;
+export default LandingPage;
