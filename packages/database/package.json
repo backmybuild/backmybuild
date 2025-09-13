@@ -6,6 +6,10 @@
   "exports": {
     ".": "./index.ts"
   },
+  "scripts": {
+    "generate": "prisma generate",
+    "build": "bun run generate"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
