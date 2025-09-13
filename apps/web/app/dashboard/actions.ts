@@ -236,7 +236,7 @@ If you didn’t request this, ignore this email.`;
                   display:inline-block">
         ${otp}
       </div>
-      <p style="margin:16px 0 8px;color:#6b7280">Expires in 30 seconds.</p>
+      <p style="margin:16px 0 8px;color:#6b7280">It expires in  5 minutes.</p>
 
       <hr style="margin:20px 0;border:none;border-top:1px solid #e5e7eb" />
 

@@ -25,7 +25,7 @@ import {
 } from "./actions";
 import { toast } from "react-toastify";
 import { CHAIN, TRANSFER_FEE, publicClient } from "@fuelme/defination";
-import { OtpInput } from "./OtpInput";
+import { OtpInput } from "./opt-input";
 import Nav from "../../components/Nav";
 
 const fileToDataUrl = (file: File): Promise<string> => {
