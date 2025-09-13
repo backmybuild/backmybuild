@@ -33,6 +33,7 @@ import { LogOut } from "lucide-react";
 import { toast } from "react-toastify";
 import { CHAIN, TRANSFER_FEE } from "@fuelme/defination";
 import { OtpInput } from "./OtpInput";
+import Nav from "../../components/Nav";
 
 // ------------------------------------------------------------
 // Fuelme — Dashboard Page (rev)
@@ -167,7 +168,7 @@ function PrimaryButton({
   return (
     <button
       {...props}
-      className={`h-10 px-4 rounded-xl bg-white text-black font-medium hover:bg-white/90 active:scale-[.99] ${className ?? ""}`}
+      className={`h-10 px-4 hover:cursor-pointer rounded-xl bg-white text-black font-medium hover:bg-white/90 active:scale-[.99] ${className ?? ""}`}
     >
       {children}
     </button>
@@ -182,7 +183,7 @@ function GhostButton({
   return (
     <button
       {...props}
-      className={`h-10 px-4 rounded-xl bg-white/5 text-white hover:bg-white/10 border border-white/10 ${className ?? ""}`}
+      className={`h-10 px-4 hover:cursor-pointer rounded-xl bg-white/5 text-white hover:bg-white/10 border border-white/10 ${className ?? ""}`}
     >
       {children}
     </button>
@@ -247,6 +248,7 @@ const FuelmeDashboardPage = () => {
   const [isRequestingOtp, setIsRequestingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
     if (resendCooldown <= 0) return;
@@ -499,14 +501,20 @@ const FuelmeDashboardPage = () => {
 
   return (
     <main className="min-h-[100dvh] bg-black text-white">
-      <nav className="sticky top-0 z-30 bg-black/50 backdrop-blur border-b border-white/10">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <Logo />
-            <span className="font-semibold tracking-wide">FuelMe</span>
-          </Link>
-        </div>
-      </nav>
+      <Nav>
+        <GhostButton
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="flex items-center justify-center rounded-full bg-blue-200 text-black shadow transition hover:opacity-90 text-sm"
+        >
+          <Image
+            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+            alt="Google"
+            width={15}
+            height={15}
+          />&nbsp;
+          Sign out
+        </GhostButton>
+      </Nav>
       <div className="mx-auto max-w-6xl px-4 py-6 space-y-6">
         {/* HERO — Total Earned only */}
         <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/[.06] to-white/[.02] p-6 sm:p-8">
@@ -527,14 +535,7 @@ const FuelmeDashboardPage = () => {
               />
               <div>
                 <div className="text-2xl font-bold">
-                  {profile?.fullname || profile?.username}
-                  <button
-                    onClick={() => signOut({ callbackUrl: "/login" })}
-                    className="p-1 ml-2 hover:cursor-pointer"
-                    title="Sign out"
-                  >
-                    <LogOut className="w-5 h-5 text-white/70 hover:text-white" />
-                  </button>
+                  Hi, {profile?.fullname || profile?.username}
                 </div>
                 <div className="text-sm text-white/70">
                   <Link

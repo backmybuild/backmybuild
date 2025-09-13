@@ -3,6 +3,8 @@ import { use, useEffect, useState } from "react";
 import { signIn, useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import Nav from "../../components/Nav";
+import Logo from "../../components/Logo";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -13,7 +15,7 @@ export default function LoginPage() {
     if (status === "authenticated") {
       router.push("/dashboard");
     }
-  }, [status])
+  }, [status]);
 
   const handleGoogle = async () => {
     try {
@@ -46,11 +48,8 @@ export default function LoginPage() {
         <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl p-8">
           {/* Logo + Title */}
           <div className="flex flex-col items-center gap-3">
-            <div className="size-14 rounded-2xl bg-white/10 grid place-items-center">
-              {/* Replace with your logo if you have one */}
-              <span className="text-xl font-bold">⛽</span>
-            </div>
-            <h1 className="text-2xl font-semibold tracking-tight">Fuel Me</h1>
+            <Logo size={60} />
+            <h1 className="text-2xl font-semibold tracking-tight">Stealth.Giving</h1>
             <p className="text-white/70 text-sm text-center max-w-xs">
               Privacy-first tipping. Sign in to set up your page and start
               receiving donations securely.
@@ -82,7 +81,7 @@ export default function LoginPage() {
 
         {/* Footer mini brand */}
         <p className="mt-6 text-center text-xs text-white/50">
-          © {new Date().getFullYear()} Fuel Me
+          © {new Date().getFullYear()} Stealth.Giving
         </p>
       </div>
     </main>
