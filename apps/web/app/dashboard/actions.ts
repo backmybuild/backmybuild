@@ -198,7 +198,7 @@ export const getUserBalanceAndTransaction = async () => {
   );
   return {
     balance,
-    txs: txs.map((t) => ({
+    txs: txs.map((t: any) => ({
       ...t,
       type: t.type.toString(),
       amountWei: BigInt(t.amountWei.toFixed(0)),
