@@ -342,7 +342,7 @@ export const handleSendUSDC = async (
   });
 
   const balances = await publicClient.multicall({
-    contracts: rows.map((row) => ({
+    contracts: rows.map((row: any) => ({
       address: USDC_ADDRESS,
       abi: erc20Abi,
       functionName: "balanceOf",
