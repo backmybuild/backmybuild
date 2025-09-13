@@ -12,7 +12,7 @@ import {
   http,
   PrivateKeyAccount,
   stringToHex,
-  Hex
+  Hex,
 } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import {
@@ -193,7 +193,7 @@ export const getUserBalanceAndTransaction = async () => {
     })),
   });
   const balance = balances.reduce(
-    (acc, cur) => acc + BigInt(cur.result || 0n),
+    (acc, cur: any) => acc + BigInt(cur.result || 0n),
     0n
   );
   return {
