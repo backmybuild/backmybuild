@@ -520,13 +520,11 @@ const FuelmeDashboardPage = () => {
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative">
             <div className="flex items-center gap-4">
-              <Image
+              <img
                 width={20}
                 height={20}
-                quality={100}
                 src={profile?.avatarUrl || "/avatar.png"}
                 alt="avatar"
-                priority
                 className="w-20 h-20 rounded-2xl object-cover border border-white/10"
               />
               <div>

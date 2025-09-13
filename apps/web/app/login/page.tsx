@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import { signIn, useSession } from "next-auth/react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Logo from "../../components/Logo";
 
@@ -62,7 +61,7 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full inline-flex items-center justify-center gap-3 rounded-xl border border-white/15 bg-white text-black font-medium py-3 hover:opacity-90 active:scale-[0.99] transition disabled:opacity-60"
             >
-              <Image
+              <img
                 src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
                 alt="Google"
                 width={20}

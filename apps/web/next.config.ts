@@ -25,6 +25,7 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "20mb",
     },
   },
+  transpilePackages: ["@fuelme/contracts", "@fuelme/database", "@fuelme/defination", "@fuelme/stealth"]
 };
 
 export default nextConfig;

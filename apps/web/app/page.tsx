@@ -1,7 +1,5 @@
-"use client";
 import type { NextPage } from "next";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 // If you have these in your codebase, you can keep them.
 // Otherwise, feel free to remove BackgroundDecor / GlobalKeyframes and the <Logo /> usage.
@@ -14,12 +12,9 @@ import Nav from "../components/Nav";
 // import { useAppKit } from "@reown/appkit/react";
 
 const LandingPage: NextPage = () => {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
   return (
     <main
-      className={`min-h-screen bg-black text-white ${mounted ? "opacity-100" : "opacity-0"} transition-opacity duration-300`}
+      className={`min-h-screen bg-black text-white transition-opacity duration-300`}
     >
       <BackgroundDecor />
       <GlobalKeyframes />

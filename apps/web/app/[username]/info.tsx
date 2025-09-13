@@ -175,8 +175,8 @@ const DonationInfo: NextPage = () => {
       <div className="mx-auto w-full max-w-sm sm:max-w-md md:max-w-lg px-4 h-full flex items-center">
         <section className="w-full rounded-3xl border border-white/10 bg-white/5 p-6 sm:p-8 backdrop-blur-xl shadow-xl text-center flex flex-col justify-center overflow-y-auto">
           <div className="flex flex-col items-center gap-5">
-            <Image
-              src={profile.avatarUrl || ""}
+            <img
+              src={profile.avatarUrl || "/avatar.png"}
               alt={`${profile.fullname} avatar`}
               width={128}
               height={128}

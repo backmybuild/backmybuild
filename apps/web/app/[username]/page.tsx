@@ -1,5 +1,4 @@
 "use server";
-
 import { Metadata, ResolvingMetadata } from "next";
 import DonationInfo from "./info";
 import { CHAIN, publicClient } from "@fuelme/defination";
@@ -28,7 +27,13 @@ export const generateMetadata = async (
     : null;
 
   if (profileData == "0x" || !profileData) {
-    return {};
+    return {
+      title: "Stealth Giving",
+      description: "A better way to give crypto to anyone, anywhere.",
+      icons: {
+        icon: "/logo.svg",
+      },
+    };
   }
 
   const profileDecoded = hexToString(profileData);
@@ -39,11 +44,11 @@ export const generateMetadata = async (
     description: profileArray[3] || "",
     icons: {
       icon: {
-        url: profileArray[1],
+        url: profileArray[1] || "./logo.svg",
       },
     },
     openGraph: {
-      images: [profileArray[1] || ""],
+      images: [profileArray[1] || "./logo.svg"],
     },
   };
 };
