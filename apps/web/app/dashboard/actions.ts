@@ -341,7 +341,7 @@ export const handleSendUSDC = async (
     orderBy: { address: "asc" },
   });
 
-  const balances = await publicClient.multicall({
+  const balances: any = await publicClient.multicall({
     contracts: rows.map((row: any) => ({
       address: USDC_ADDRESS,
       abi: erc20Abi,
@@ -414,7 +414,7 @@ export const handleSendUSDC = async (
     transport: http(),
   });
 
-  const { request } = await publicClient.simulateContract({
+  const { request }: any = await publicClient.simulateContract({
     abi: FUELME_ABI,
     address: FUELME_ADDRESSES[CHAIN.id] as Address,
     functionName: "multipleTransferAuthorized",
