@@ -9,6 +9,12 @@ const USDC_ADDRESS = process.env.USDC_ADDRESS as Hex || "0x036CbD53842c5426634e7
 const TRANSFER_FEE = parseUnits("0.01", 6)
 const FEE_ADDRESS: Address = "0x704edAab548655c2958D8A7fe58642b31dB4FB28"
 const REQUEST_VIEWING_KEY_MESSAGE = "Request viewing key"
+const STEALTH_SIGN_MESSAGE = `
+Stealth.Giving Protocol.
+Sign this message to unlock your stealth profile. 
+This won't cost any gas or FEE and won't perform any on-chain actions.
+Remember, DON'T SHARE this signature with anyone!
+`;
 
 const publicClient = createPublicClient({
   chain: CHAIN,
@@ -23,4 +29,5 @@ export {
   REQUEST_VIEWING_KEY_MESSAGE,
   USDC_ADDRESS,
   publicClient,
+  STEALTH_SIGN_MESSAGE
 }

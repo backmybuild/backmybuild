@@ -7,6 +7,6 @@ optimizer = true
 optimizer_runs = 200000
 
 [rpc_endpoints]
-base_sepolia = "https://sepolia.base.org/"
+base_sepolia = "https://base-sepolia.api.onfinality.io/public"
 base = "https://mainnet.base.org/"
 local = "127.0.0.1:8545"

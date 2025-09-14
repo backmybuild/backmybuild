@@ -42,6 +42,45 @@ This won't cost any gas or FEE and won't perform any on-chain actions.
 Remember, DON'T SHARE this signature with anyone!
 `;
 
+const extractPortions = (signature: Hex) => {
+  const startIndex = 2; // first two characters are 0x, so skip these
+  const length = 64; // each 32 byte chunk is in hex, so 64 characters
+  const portion1 = signature.slice(startIndex, startIndex + length);
+  const portion2 = signature.slice(
+    startIndex + length,
+    startIndex + length + length
+  );
+  const lastByte = signature.slice(signature.length - 2);
+
+  return { portion1, portion2, lastByte };
+};
+
+
+export const generateStealthKeyFromSignature = (signature: Hex): StealthKey => {
+  const { portion1, portion2, lastByte } = extractPortions(signature);
+
+  if (`0x${portion1}${portion2}${lastByte}` !== signature) {
+    throw new Error("Signature incorrectly generated or parsed");
+  }
+
+  const spendingPrivateKey = hexToBytes(keccak256(`0x${portion1}`));
+  const viewingPrivateKey = hexToBytes(keccak256(`0x${portion2}`));
+
+  const spendingPublicKey = bytesToHex(getPublicKey(spendingPrivateKey, true));
+  const viewingPublicKey = bytesToHex(getPublicKey(viewingPrivateKey, true));
+
+  return {
+    spendingKey: {
+      publicKey: spendingPublicKey,
+      privateKey: bytesToHex(spendingPrivateKey),
+    },
+    viewingKey: {
+      publicKey: viewingPublicKey,
+      privateKey: bytesToHex(viewingPrivateKey),
+    },
+  };
+};
+
 const getViewTag = (hashSharedSecret: Hex): Hex => {
   return `0x${hashSharedSecret.toString().substring(2, 4)}`;
 };

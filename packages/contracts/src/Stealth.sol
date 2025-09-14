@@ -8,11 +8,9 @@ import "openzeppelin/token/ERC20/utils/SafeERC20.sol";
 
 import "./interfaces/IUSDC.sol";
 
-contract Stealth is Ownable, EIP712 {
+contract Stealth is Ownable {
     using SafeERC20 for IUSDC;
 
-    bytes32 public constant TYPEHASH =
-        keccak256("UpdateProfile(bytes key,bytes profile,uint256 nonce)");
     uint256 public constant FEE_DENOMINATOR = 10000;
     IUSDC public immutable USDC;
 
@@ -42,26 +40,21 @@ contract Stealth is Ownable, EIP712 {
     }
 
     struct Profile {
+        bytes username;
         bytes key;
         bytes profile;
+        uint256 createdAt;
     }
 
     uint256 public feePercent;
     address public feeCollector;
-    address[] public authorizers; // for query
-
-    mapping(bytes => bytes) public keys; // hash(username) -> encoded composed key
-    mapping(bytes => bytes) public profiles; // hash(username) -> encoded profile
-    mapping(address => bytes) public authorizedKeys; // address -> hash(username), for query
-    mapping(address => mapping(uint256 => bool)) public nonceUsed; // address -> nonce -> used
 
     mapping(address => Profile) public profilesOfAddress; // address -> Profile,
-    mapping(string => address) public addressOfUsername; // hash(username) -> address
-    mapping(address => address) public addressOfAuthorizer; // address -> authorizer address
+    mapping(bytes => address) public addressOfUsername; // hash(username) -> address
 
     event FeePercentUpdated(uint256 newFeePercent);
     event FeeCollectorUpdated(address newFeeCollector);
-    event ProfileUpdated(bytes username);
+    event ProfileUpdated(address indexed user);
     event Announcement(
         address indexed stealthAddress,
         uint16 indexed viewTag,
@@ -75,15 +68,10 @@ contract Stealth is Ownable, EIP712 {
         uint256 _feePercent,
         address _feeCollector,
         address _usdc
-    ) Ownable(_owner) EIP712("FuelMe", "1") {
+    ) Ownable(_owner) {
         feePercent = _feePercent;
         feeCollector = _feeCollector;
         USDC = IUSDC(_usdc);
-    }
-
-    function _useNonce(address _user, uint256 _nonce) internal {
-        require(!nonceUsed[_user][_nonce], "Nonce used");
-        nonceUsed[_user][_nonce] = true;
     }
 
     function updateFeePercent(uint256 _feePercent) external onlyOwner {
@@ -97,15 +85,27 @@ contract Stealth is Ownable, EIP712 {
         emit FeeCollectorUpdated(_feeCollector);
     }
 
-    function updateProfile(
+    function createProfile(
         bytes calldata _username,
-        Profile calldata _profile,
-        address _authorizer
+        bytes calldata _key,
+        bytes calldata _profile
     ) external {
         require(_username.length > 0, "Invalid username");
+        profilesOfAddress[msg.sender] = Profile({
+            username: _username,
+            key: _key,
+            profile: _profile,
+            createdAt: block.timestamp
+        });
+        addressOfUsername[_username] = msg.sender;
 
-        
-        emit ProfileUpdated(_username);
+        emit ProfileUpdated(msg.sender);
+    }
+
+    function updateProfile(bytes calldata _profile) external {
+        profilesOfAddress[msg.sender].profile = _profile;
+
+        emit ProfileUpdated(msg.sender);
     }
 
     function donate(
@@ -160,23 +160,6 @@ contract Stealth is Ownable, EIP712 {
         }
     }
 
-    function getProfile(
-        bytes memory _username
-    ) external view returns (bytes memory, bytes memory) {
-        return (keys[_username], profiles[_username]);
-    }
-
-    function getProfileByAddress(
-        address _authorizer
-    ) external view returns (bytes memory, bytes memory, bytes memory) {
-        bytes memory username = authorizedKeys[_authorizer];
-        return (username, keys[username], profiles[username]);
-    }
-
-    function getAuthorizersCount() external view returns (uint256) {
-        return authorizers.length;
-    }
-
     function hashDonation(
         Donation memory _donation
     ) public pure returns (bytes32) {
@@ -189,29 +172,5 @@ contract Stealth is Ownable, EIP712 {
                     _donation.message
                 )
             );
-    }
-
-    function getAuthorizers(
-        uint256 _startIndex,
-        uint256 _length
-    ) external view returns (address[] memory addresses, bytes[] memory keyOfUsers) {
-        uint256 total = authorizers.length;
-        if (_startIndex >= total) {
-            return (new address[](0), new bytes[](0));
-        }
-        uint256 endIndex = _startIndex + _length;
-        if (endIndex > total) {
-            endIndex = total;
-        }
-        _length = endIndex - _startIndex;
-
-        addresses = new address[](_length);
-        for (uint256 i = 0; i < _length; i++) {
-            addresses[i] = authorizers[_startIndex + i];
-        }
-        keyOfUsers = new bytes[](_length);
-        for (uint256 i = 0; i < _length; i++) {
-            keyOfUsers[i] = keys[authorizedKeys[addresses[i]]];
-        }
     }
 }
