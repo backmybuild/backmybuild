@@ -1,5 +1,5 @@
 {
-  "name": "@fuelme/stealth",
+  "name": "@stealthgiving/stealth",
   "module": "index.ts",
   "type": "module",
   "private": true,

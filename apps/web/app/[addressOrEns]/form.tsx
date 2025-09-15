@@ -7,7 +7,7 @@ import {
   useSignTypedData,
   useSwitchChain,
 } from "wagmi";
-import { CHAIN, publicClient, USDC_ADDRESS } from "@fuelme/defination";
+import { CHAIN, publicClient, USDC_ADDRESS } from "@stealthgiving/defination";
 import {
   encodeAbiParameters,
   erc20Abi,
@@ -17,8 +17,8 @@ import {
   parseUnits,
   stringToHex,
 } from "viem";
-import { generateStealthAddress } from "@fuelme/stealth";
-import { FUELME_ADDRESSES } from "@fuelme/contracts";
+import { generateStealthAddress } from "@stealthgiving/stealth";
+import { FUELME_ADDRESSES } from "@stealthgiving/contracts";
 import { toast } from "react-toastify";
 import { donate } from "./action";
 import Link from "next/link";

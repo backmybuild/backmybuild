@@ -1,5 +1,5 @@
 {
-  "name": "@fuelme/web",
+  "name": "@stealthgiving/web",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -10,12 +10,11 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@fuelme/contracts": "*",
-    "@fuelme/database": "*",
-    "@fuelme/defination": "*",
-    "@fuelme/stealth": "*",
     "@headlessui/react": "^2.2.8",
     "@rainbow-me/rainbowkit": "^2.2.8",
+    "@stealthgiving/contracts": "*",
+    "@stealthgiving/defination": "*",
+    "@stealthgiving/stealth": "*",
     "@tanstack/react-query": "^5.87.4",
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
@@ -23,7 +22,6 @@
     "cloudinary": "^2.7.0",
     "lucide-react": "^0.543.0",
     "next": "^15.5.2",
-    "next-auth": "^4.24.11",
     "next-nprogress-bar": "^2.4.7",
     "otplib": "^12.0.1",
     "react": "19.1.0",

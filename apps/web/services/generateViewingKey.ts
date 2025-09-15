@@ -1,5 +1,5 @@
 "use server"
-import { computeViewingKey, Key } from "@fuelme/stealth";
+import { computeViewingKey, Key } from "@stealthgiving/stealth";
 import { Address, Hex, stringToHex, verifyMessage } from "viem";
 
 const PRIVATE_SEEDS = process.env.PRIVATE_SEEDS ?? "test";

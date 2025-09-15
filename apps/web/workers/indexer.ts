@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
-import { checkStealthAddress } from "@fuelme/stealth";
-import { CHAIN, publicClient } from "@fuelme/defination";
-import { FUELME_ADDRESSES } from "@fuelme/contracts";
+import { checkStealthAddress } from "@stealthgiving/stealth";
+import { CHAIN, publicClient } from "@stealthgiving/defination";
+import { FUELME_ADDRESSES } from "@stealthgiving/contracts";
 import { parseAbiItem } from "viem";
 
 const BLOCK_BATCH_SIZE = 1000n;

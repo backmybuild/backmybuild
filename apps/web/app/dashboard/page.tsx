@@ -1,53 +1,33 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 "use client";
 
-import { use, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Address,
-  formatUnits,
-  getAddress,
   Hex,
   hexToString,
-  parseUnits,
   stringToHex,
 } from "viem";
-import Link from "next/link";
-import Image from "next/image";
-import { FUELME_ABI, FUELME_ADDRESSES } from "@fuelme/contracts";
-import { useRouter } from "next/navigation";
-import {
-  updateProfile,
-  getSpendingAddress,
-  getUserBalanceAndTransaction,
-  requestTransferOTP,
-  handleSendUSDC,
-  getViewingKey,
-} from "./actions";
+import { FUELME_ABI, FUELME_ADDRESSES } from "@stealthgiving/contracts";
 import { toast } from "react-toastify";
 import {
   CHAIN,
-  REQUEST_VIEWING_KEY_MESSAGE,
-  TRANSFER_FEE,
   publicClient,
   STEALTH_SIGN_MESSAGE,
-} from "@fuelme/defination";
+} from "@stealthgiving/defination";
 import Nav from "../../components/Nav";
 import { ConnectButton, useConnectModal } from "@rainbow-me/rainbowkit";
 import {
   useAccount,
-  useBalance,
-  useEnsAvatar,
   useEnsName,
   useSignMessage,
   useWriteContract,
 } from "wagmi";
 import {
-  generateSpendingKeyFromSignature,
   generateStealthKeyFromSignature,
   getEncryptionPublicKey,
   StealthKey,
-} from "@fuelme/stealth";
-import { privateKeyToAccount } from "viem/accounts";
+} from "@stealthgiving/stealth";
 import { useUserStore } from "../../stores/useUserStore";
 import Modal from "../../components/Modal";
 import UpdateProfileModal from "./update-profile";
@@ -55,15 +35,6 @@ import TransactionsPage from "./transactions";
 import InfoPage from "./info";
 import Footer from "../../components/Footer";
 import { useIndexer } from "../../hooks/useIndexer";
-
-const fileToDataUrl = (file: File): Promise<string> => {
-  return new Promise((res, rej) => {
-    const reader = new FileReader();
-    reader.onload = () => res(reader.result as string);
-    reader.onerror = rej;
-    reader.readAsDataURL(file);
-  });
-};
 
 // ------------------------------------------------------------
 // Fuelme — Dashboard Page (rev)

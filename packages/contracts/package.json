@@ -1,5 +1,5 @@
 {
-  "name": "@fuelme/contracts",
+  "name": "@stealthgiving/contracts",
   "type": "module",
   "private": true,
   "exports": {

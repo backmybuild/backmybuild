@@ -7,7 +7,7 @@ import {
   generateStealthAddress,
   getEncryptionPublicKey,
   STEALTH_SIGN_MESSAGE,
-} from "@fuelme/stealth";
+} from "@stealthgiving/stealth";
 import {
   createPublicClient,
   createWalletClient,
@@ -38,7 +38,7 @@ import {
   privateKeyToAccount,
   publicKeyToAddress,
 } from "viem/accounts";
-import { FUELME_ADDRESSES, FUELME_ABI } from "@fuelme/contracts";
+import { FUELME_ADDRESSES, FUELME_ABI } from "@stealthgiving/contracts";
 import { anvil, baseSepolia, localhost } from "viem/chains";
 
 const PRIVATE_SEEDS = process.env.PRIVATE_SEEDS ?? "test";

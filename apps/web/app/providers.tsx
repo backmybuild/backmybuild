@@ -1,10 +1,13 @@
 "use client";
 import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
-import { SessionProvider } from "next-auth/react";
 import { ToastContainer } from "react-toastify";
-import { darkTheme, getDefaultConfig, RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import {
+  darkTheme,
+  getDefaultConfig,
+  RainbowKitProvider,
+} from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { CHAIN } from "@fuelme/defination";
+import { CHAIN } from "@stealthgiving/defination";
 import { WagmiProvider } from "wagmi";
 import "@rainbow-me/rainbowkit/styles.css";
 
@@ -27,18 +30,16 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
             overlayBlur: "large",
           })}
         >
-          <SessionProvider>
-            {children}
-            <ProgressBar
-              color="#ffffff"
-              height="4px"
-              options={{
-                showSpinner: false,
-              }}
-              shallowRouting
-            />
-            <ToastContainer theme="dark" />
-          </SessionProvider>
+          {children}
+          <ProgressBar
+            color="#ffffff"
+            height="4px"
+            options={{
+              showSpinner: false,
+            }}
+            shallowRouting
+          />
+          <ToastContainer theme="dark" />
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>

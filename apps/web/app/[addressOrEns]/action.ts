@@ -1,18 +1,9 @@
 "use server";
 import "server-only";
-import { FUELME_ABI, FUELME_ADDRESSES } from "@fuelme/contracts";
-import prisma from "@fuelme/database";
-import { CHAIN, publicClient } from "@fuelme/defination";
-import { ACCOUNT_SEEDS, PRIVATE_KEY } from "@fuelme/defination/server";
-import { checkStealthAddress, computeViewingKey } from "@fuelme/stealth";
-import {
-  Address,
-  createWalletClient,
-  Hex,
-  hexToString,
-  http,
-  stringToHex,
-} from "viem";
+import { FUELME_ABI, FUELME_ADDRESSES } from "@stealthgiving/contracts";
+import { CHAIN, publicClient } from "@stealthgiving/defination";
+import { PRIVATE_KEY } from "@stealthgiving/defination/server";
+import { Address, createWalletClient, Hex, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
 const walletClient = createWalletClient({

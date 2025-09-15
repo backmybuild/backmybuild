@@ -1,8 +1,8 @@
 "use server";
 import { Metadata, ResolvingMetadata } from "next";
 import DonationInfo from "./info";
-import { CHAIN, publicClient } from "@fuelme/defination";
-import { FUELME_ABI, FUELME_ADDRESSES } from "@fuelme/contracts";
+import { CHAIN, publicClient } from "@stealthgiving/defination";
+import { FUELME_ABI, FUELME_ADDRESSES } from "@stealthgiving/contracts";
 import { Hex, hexToString, stringToHex } from "viem";
 
 type Props = {

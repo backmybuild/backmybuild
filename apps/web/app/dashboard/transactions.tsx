@@ -215,7 +215,7 @@ const TransactionsPage: React.FC = () => {
       ) : (
         <div className="text-center flex flex-col items-center gap-3">
           <Heart className="h-10 w-10 text-pink-500 opacity-80" />
-          <p className="text-gray-400">You don't have any supporters yet.</p>
+          <p className="text-gray-400">You don&apos;t have any supporters yet.</p>
           <p className="text-gray-500">
             Share your profile link to get supporters.
           </p>

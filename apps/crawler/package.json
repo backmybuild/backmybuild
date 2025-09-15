@@ -10,9 +10,8 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@fuelme/contracts": "*",
-    "@fuelme/database": "*",
-    "@fuelme/defination": "*",
-    "@fuelme/stealth": "*"
+    "@stealthgiving/contracts": "*",
+    "@stealthgiving/defination": "*",
+    "@stealthgiving/stealth": "*"
   }
 }

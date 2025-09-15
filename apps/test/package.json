@@ -10,8 +10,8 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@fuelme/contracts": "*",
-    "@fuelme/stealth": "*",
+    "@stealthgiving/contracts": "*",
+    "@stealthgiving/stealth": "*",
     "otplib": "^12.0.1"
   }
 }

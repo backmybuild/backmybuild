@@ -1,7 +1,7 @@
 "use client";
 import "@rainbow-me/rainbowkit/styles.css";
-import { FUELME_ABI, FUELME_ADDRESSES } from "@fuelme/contracts";
-import { CHAIN, publicClient } from "@fuelme/defination";
+import { FUELME_ABI, FUELME_ADDRESSES } from "@stealthgiving/contracts";
+import { CHAIN, publicClient } from "@stealthgiving/defination";
 import { NextPage } from "next";
 import Link from "next/link";
 import { useParams } from "next/navigation";
