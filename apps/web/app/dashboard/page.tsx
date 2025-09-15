@@ -54,6 +54,7 @@ import UpdateProfileModal from "./update-profile";
 import TransactionsPage from "./transactions";
 import InfoPage from "./info";
 import Footer from "../../components/Footer";
+import { useIndexer } from "../../hooks/useIndexer";
 
 const fileToDataUrl = (file: File): Promise<string> => {
   return new Promise((res, rej) => {
@@ -135,8 +136,7 @@ const DashboardPage = () => {
     profile: null,
     isLoading: true,
   });
-
-  console.log(user);
+  // useIndexer()
 
   const isAccountCreated = !!profile.profile;
 
