@@ -11,7 +11,7 @@ const Nav: React.FC<NavProps> = ({ children }: { children: React.ReactNode }) =>
     <nav className="sticky top-0 z-30 bg-black/50 backdrop-blur border-b border-white/10">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <Logo />
+          <img src="/logo.svg" alt="Stealth.Giving Logo" className="h-10 w-10" />
           <span className="font-semibold tracking-wide">Stealth.Giving</span>
         </Link>
         {children}

@@ -3,22 +3,10 @@ import type { NextPage } from "next";
 import Link from "next/link";
 import BackgroundDecor from "../components/BackgroundDecor";
 import GlobalKeyframes from "../components/GlobalKeyframes";
-import Logo from "../components/Logo";
 import Nav from "../components/Nav";
-import { useAccount } from "wagmi";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
 import Footer from "../components/Footer";
 
 const LandingPage: NextPage = () => {
-  const { openConnectModal } = useConnectModal();
-  const { address, isConnected } = useAccount();
-
-  const handleCreatePageClick = async () => {
-    if ((!isConnected || !address) && openConnectModal) {
-      openConnectModal();
-    }
-  };
-
   return (
     <main
       className={`min-h-screen bg-black text-white transition-opacity duration-300`}
@@ -69,12 +57,12 @@ const LandingPage: NextPage = () => {
                 wallet drops.
               </p>
               <div className="mt-6 flex flex-wrap items-center gap-3">
-                <button
-                  onClick={handleCreatePageClick}
+                <Link
+                  href="/dashboard"
                   className="rounded-full bg-white text-black px-5 py-2.5 text-sm font-semibold shadow hover:opacity-90"
                 >
                   Create your page
-                </button>
+                </Link>
                 <a
                   href="#privacy"
                   className="rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm hover:bg-white/10"

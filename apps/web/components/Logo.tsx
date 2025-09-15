@@ -1,41 +1,59 @@
-const Logo = ({ size = 30 }: { size?: number }) => (
+const Logo = ({ size = 50 }: { size?: number }) => (
   <div className="relative" style={{ width: size, height: size }}>
     <svg viewBox="0 0 24 24" className="w-full h-full">
-      <defs>
-        <linearGradient id="g1" x1="0" x2="1" y1="1" y2="0">
-          <stop offset="0%" stopColor="#a78bfa" />
-          <stop offset="50%" stopColor="#60a5fa" />
-          <stop offset="100%" stopColor="#22d3ee" />
-        </linearGradient>
-      </defs>
-      {/* Rounded square background */}
-      <rect x="2" y="2" width="20" height="20" rx="6" fill="url(#g1)" />
+      {/* Background with subtle layering */}
+      <rect
+        x="2"
+        y="2"
+        width="20"
+        height="20"
+        rx="6"
+        fill="#0f172a" // slate-900 background
+      />
+      <rect
+        x="3.5"
+        y="3.5"
+        width="17"
+        height="17"
+        rx="5"
+        fill="#1e293b" // slate-800 inner layer
+      />
 
-      {/* Lock body */}
+      {/* Lock body with soft shadow */}
       <rect
         x="8"
         y="11"
         width="8"
         height="6"
-        rx="1.5"
+        rx="1.8"
         fill="white"
-        opacity="0.9"
+        opacity="0.6"
+      />
+      <rect
+        x="8"
+        y="11"
+        width="8"
+        height="6"
+        rx="1.8"
+        stroke="white"
+        strokeOpacity="0.8"
       />
 
       {/* Lock shackle */}
       <path
         d="M10 11V9.5a2 2 0 0 1 4 0V11"
         stroke="white"
-        strokeWidth="1.5"
+        strokeWidth="1.6"
         fill="none"
         strokeLinecap="round"
       />
 
-      {/* Heart inside lock */}
+      {/* Heart inside lock with subtle shine */}
       <path
-        d="M12 14.5l-0.7-0.7a1.5 1.5 0 1 1 2.1-2.1l0.6 0.6 0.6-0.6a1.5 1.5 0 1 1 2.1 2.1l-0.7 0.7-2 2-2-2z"
+        d="M12 14.3l-0.6-0.6a1.2 1.2 0 1 1 1.7-1.7l0.4 0.4 0.4-0.4a1.2 1.2 0 1 1 1.7 1.7l-0.6 0.6-1.5 1.5-1.5-1.5z"
         fill="#ef4444"
       />
+      <circle cx="12.8" cy="13.2" r="0.4" fill="white" opacity="0.6" />
     </svg>
   </div>
 );

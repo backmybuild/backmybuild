@@ -1,11 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-  <defs>
-    <linearGradient id="g1" x1="0" x2="1" y1="1" y2="0">
-      <stop offset="0%" stop-color="#a78bfa"></stop>
-      <stop offset="50%" stop-color="#60a5fa"></stop>
-      <stop offset="100%" stop-color="#22d3ee"></stop>
-    </linearGradient>
-  </defs>
-  <rect x="2" y="2" width="20" height="20" rx="5" fill="url(#g1)"></rect>
-  <path d="M7 9h10M7 12h6M7 15h10" stroke="black" stroke-width="1.5" stroke-linecap="round"></path>
+<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background layers -->
+  <rect x="2" y="2" width="20" height="20" rx="6" fill="#0f172a"/>
+  <rect x="3.5" y="3.5" width="17" height="17" rx="5" fill="#1e293b"/>
+
+  <!-- Lock body -->
+  <rect x="8" y="11" width="8" height="6" rx="1.8" fill="white" opacity="0.95"/>
+  <rect x="8" y="11" width="8" height="6" rx="1.8" fill="none" stroke="white" stroke-opacity="0.2"/>
+
+  <!-- Lock shackle -->
+  <path d="M10 11V9.5a2 2 0 0 1 4 0V11" stroke="white" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+
+  <!-- Heart inside lock -->
+  <path d="M12 14.3l-0.6-0.6a1.2 1.2 0 1 1 1.7-1.7l0.4 0.4 0.4-0.4a1.2 1.2 0 1 1 1.7 1.7l-0.6 0.6-1.5 1.5-1.5-1.5z" fill="#ef4444"/>
+
+  <!-- Heart shine -->
+  <circle cx="12.8" cy="13.2" r="0.4" fill="white" opacity="0.6"/>
 </svg>
