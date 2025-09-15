@@ -21,6 +21,7 @@ import { generateStealthAddress } from "@fuelme/stealth";
 import { FUELME_ADDRESSES } from "@fuelme/contracts";
 import { toast } from "react-toastify";
 import { donate } from "./action";
+import Link from "next/link";
 
 const formatEth = (v: string) => {
   if (!v) return "";
@@ -37,16 +38,11 @@ export type Key = {
 };
 
 type DonateProps = {
-  username: string;
   fullname: string;
   stealthKey: Key;
 };
 
-const DonateForm: React.FC<DonateProps> = ({
-  username,
-  fullname,
-  stealthKey,
-}) => {
+const DonateForm: React.FC<DonateProps> = ({ fullname, stealthKey }) => {
   const { isConnected, address } = useAccount();
   const { openConnectModal } = useConnectModal();
   const { switchChainAsync } = useSwitchChain();
@@ -155,7 +151,7 @@ const DonateForm: React.FC<DonateProps> = ({
         },
       });
 
-      const txHash = await donate(username.toString(), donationInfor, {
+      const txHash = await donate(donationInfor, {
         from: address,
         value: parseUnits(amount || "0", 6),
         validAfter: now,
@@ -252,18 +248,23 @@ const DonateForm: React.FC<DonateProps> = ({
         <button
           onClick={onDonate}
           disabled={isSending}
-          className="mt-6 px-4 py-2 w-full rounded-2xl bg-white text-black font-semibold hover:cursor-pointer disabled:opacity-40"
+          className="mt-2 px-4 py-2 w-full rounded-2xl bg-white text-black font-semibold hover:cursor-pointer disabled:opacity-40"
         >
           {isSending ? "Processing..." : "Send tip privately"}
         </button>
       ) : (
         <button
-          className="mt-6 px-4 py-2 w-full rounded-2xl bg-white text-black font-semibold hover:cursor-pointer disabled:opacity-40"
+          className="mt-2 px-4 py-2 w-full rounded-2xl bg-white text-black font-semibold hover:cursor-pointer disabled:opacity-40"
           onClick={openConnectModal}
         >
           Connect Wallet
         </button>
       )}
+      <div className="mt-6 text-center text-xs text-white/70">
+        <Link href="/dashboard" className="text-center text-xs text-white underline decoration-dotted hover:opacity-80">
+          Create your free Stealth.Giving account
+        </Link>
+      </div>
     </div>
   );
 };
