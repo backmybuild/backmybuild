@@ -1,12 +1,11 @@
 "use client";
-import "@rainbow-me/rainbowkit/styles.css";
 import { FUELME_ABI, FUELME_ADDRESSES } from "@stealthgiving/contracts";
 import { CHAIN, publicClient } from "@stealthgiving/definition";
 import { NextPage } from "next";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { Hex, hexToString } from "viem";
+import { Hex, hexToString, isAddress } from "viem";
 import DonateForm, { Key } from "./form";
 import SocialIcon from "../../components/SocialIcon";
 
@@ -26,6 +25,10 @@ const DonationInfo: NextPage = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
+      if (!addressOrEns || !isAddress(addressOrEns)) {
+        setIsLoading(false);
+        return
+      };
       const [keyEncoded, profileEncoded, createAt] =
         (await publicClient.readContract({
           address: FUELME_ADDRESSES[CHAIN.id],
