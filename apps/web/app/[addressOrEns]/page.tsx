@@ -6,7 +6,7 @@ import { FUELME_ABI, FUELME_ADDRESSES } from "@fuelme/contracts";
 import { Hex, hexToString, stringToHex } from "viem";
 
 type Props = {
-  params: Promise<{ username: string }>;
+  params: Promise<{ addressOrEns: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
@@ -15,18 +15,14 @@ export const generateMetadata = async (
   _: ResolvingMetadata
 ): Promise<Metadata> => {
   // read route params
-  const { username } = await params;
-  const profileEncoded = await publicClient.readContract({
+  const { addressOrEns } = await params;
+  const [keyEncoded, profileEncoded, createAt] = await publicClient.readContract({
     address: FUELME_ADDRESSES[CHAIN.id],
     abi: FUELME_ABI,
-    functionName: "getProfile",
-    args: [stringToHex(username)],
-  });
-  const profileData = profileEncoded
-    ? ((profileEncoded as any)[1] as Hex)
-    : null;
-
-  if (profileData == "0x" || !profileData) {
+    functionName: "profilesOfAddress",
+    args: [addressOrEns],
+  }) as [Hex, Hex, bigint];
+  if (profileEncoded == "0x" || !profileEncoded) {
     return {
       title: "Stealth Giving",
       description: "A better way to give crypto to anyone, anywhere.",
@@ -36,7 +32,7 @@ export const generateMetadata = async (
     };
   }
 
-  const profileDecoded = hexToString(profileData);
+  const profileDecoded = hexToString(profileEncoded);
   const profileArray = profileDecoded.split("|");
 
   return {

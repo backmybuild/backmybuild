@@ -26,9 +26,6 @@ contract Stealth is Ownable {
         address from;
         address to;
         uint256 value;
-        uint256 validAfter;
-        uint256 validBefore;
-        bytes32 nonce;
         bytes signature;
     }
 
@@ -40,7 +37,6 @@ contract Stealth is Ownable {
     }
 
     struct Profile {
-        bytes username;
         bytes key;
         bytes profile;
         uint256 createdAt;
@@ -50,7 +46,6 @@ contract Stealth is Ownable {
     address public feeCollector;
 
     mapping(address => Profile) public profilesOfAddress; // address -> Profile,
-    mapping(bytes => address) public addressOfUsername; // hash(username) -> address
 
     event FeePercentUpdated(uint256 newFeePercent);
     event FeeCollectorUpdated(address newFeeCollector);
@@ -86,18 +81,18 @@ contract Stealth is Ownable {
     }
 
     function createProfile(
-        bytes calldata _username,
         bytes calldata _key,
         bytes calldata _profile
     ) external {
-        require(_username.length > 0, "Invalid username");
+        require(
+            profilesOfAddress[msg.sender].createdAt == 0,
+            "Profile already exists"
+        );
         profilesOfAddress[msg.sender] = Profile({
-            username: _username,
             key: _key,
             profile: _profile,
             createdAt: block.timestamp
         });
-        addressOfUsername[_username] = msg.sender;
 
         emit ProfileUpdated(msg.sender);
     }
@@ -131,7 +126,6 @@ contract Stealth is Ownable {
         ); // only this contract can call this action
 
         USDC.transfer(feeCollector, fee);
-
         USDC.transfer(_donation.to, amount - fee);
 
         emit Announcement(
@@ -144,7 +138,10 @@ contract Stealth is Ownable {
     }
 
     function multipleTransferAuthorized(
-        FullTranferAuthorized[] calldata _transfers
+        FullTranferAuthorized[] calldata _transfers,
+        uint256 validAfter,
+        uint256 validBefore,
+        bytes32 nonce
     ) external {
         for (uint256 i = 0; i < _transfers.length; i++) {
             FullTranferAuthorized calldata transfer = _transfers[i];
@@ -152,9 +149,9 @@ contract Stealth is Ownable {
                 transfer.from,
                 transfer.to,
                 transfer.value,
-                transfer.validAfter,
-                transfer.validBefore,
-                transfer.nonce,
+                validAfter,
+                validBefore,
+                nonce,
                 transfer.signature
             );
         }

@@ -7,36 +7,15 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { Hex, hexToString, stringToHex } from "viem";
-import {
-  darkTheme,
-  getDefaultConfig,
-  RainbowKitProvider,
-} from "@rainbow-me/rainbowkit";
-import { WagmiProvider } from "wagmi";
-import {
-  base,
-  baseSepolia,
-} from "wagmi/chains";
-import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import DonateForm, { Key } from "./form";
 
 export type Profile = {
-  username: string;
   fullname?: string;
   bio?: string;
   avatarUrl?: string;
   socials?: string[];
   key: Key;
 };
-
-const config = getDefaultConfig({
-  appName: "Fuelme",
-  projectId: "a785a0fcd3b62bf29680219fcd2409c4",
-  chains: [baseSepolia, base],
-  ssr: true, // If your dApp uses server side rendering (SSR)
-});
-
-const queryClient = new QueryClient();
 
 const Icon = ({
   name,
@@ -102,36 +81,35 @@ function getLinkType(url: string): "github" | "telegram" | "x" | "default" {
 
 const DonationInfo: NextPage = () => {
   const params = useParams();
-  const username = params.username as string;
+  const addressOrEns = params.addressOrEns as string;
   const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const profileEncoded = await publicClient.readContract({
-        address: FUELME_ADDRESSES[CHAIN.id],
-        abi: FUELME_ABI,
-        functionName: "getProfile",
-        args: [stringToHex(username)],
-      });
-      const profileData = profileEncoded
-        ? ((profileEncoded as any)[1] as Hex)
-        : null;
-      const keyData = profileEncoded
-        ? ((profileEncoded as any)[0] as Hex)
-        : null;
-      if (profileData == "0x" || keyData == "0x" || !profileData || !keyData) {
+      const [keyEncoded, profileEncoded, createAt] =
+        (await publicClient.readContract({
+          address: FUELME_ADDRESSES[CHAIN.id],
+          abi: FUELME_ABI,
+          functionName: "profilesOfAddress",
+          args: [addressOrEns],
+        })) as [Hex, Hex, bigint];
+      if (
+        profileEncoded == "0x" ||
+        keyEncoded == "0x" ||
+        !profileEncoded ||
+        !keyEncoded
+      ) {
         setIsLoading(false);
         return;
       } else {
-        const profileDecoded = hexToString(profileData);
+        const profileDecoded = hexToString(profileEncoded);
         const profileArray = profileDecoded.split("|");
 
-        const keyDecoded = hexToString(keyData);
+        const keyDecoded = hexToString(keyEncoded);
         const keyArray = keyDecoded.split("|");
 
         setProfile({
-          username,
           fullname: profileArray[0] || "",
           avatarUrl: profileArray[1] || "",
           socials: profileArray[2] ? profileArray[2].split(",") : [],
@@ -145,10 +123,10 @@ const DonationInfo: NextPage = () => {
         setIsLoading(false);
       }
     };
-    if (username) {
+    if (addressOrEns) {
       fetchProfile();
     }
-  }, [username]);
+  }, [addressOrEns]);
 
   if (isLoading) {
     return (
@@ -202,22 +180,11 @@ const DonationInfo: NextPage = () => {
           </div>
 
           <div className="my-4 h-px w-full bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-          <WagmiProvider reconnectOnMount={false} config={config}>
-            <QueryClientProvider client={queryClient}>
-              <RainbowKitProvider
-                theme={darkTheme({
-                  accentColorForeground: "white",
-                  overlayBlur: "large",
-                })}
-              >
-                <DonateForm
-                  username={profile.username}
-                  fullname={profile.fullname || ""}
-                  stealthKey={profile.key}
-                />
-              </RainbowKitProvider>
-            </QueryClientProvider>
-          </WagmiProvider>
+          <DonateForm
+            username={""}
+            fullname={profile.fullname || ""}
+            stealthKey={profile.key}
+          />
         </section>
       </div>
     </main>

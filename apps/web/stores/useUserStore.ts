@@ -2,7 +2,7 @@ import { Address, Hex } from "viem";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-type Transaction = {
+export type Transaction = {
   blockNumber: string;
   blockTimestamp: string;
   txHash: Hex;

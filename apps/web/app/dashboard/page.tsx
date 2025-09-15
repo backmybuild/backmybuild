@@ -31,13 +31,13 @@ import {
   publicClient,
   STEALTH_SIGN_MESSAGE,
 } from "@fuelme/defination";
-import { OtpInput } from "./opt-input";
 import Nav from "../../components/Nav";
 import { ConnectButton, useConnectModal } from "@rainbow-me/rainbowkit";
 import {
   useAccount,
   useBalance,
   useEnsAvatar,
+  useEnsName,
   useSignMessage,
   useWriteContract,
 } from "wagmi";
@@ -49,7 +49,11 @@ import {
 } from "@fuelme/stealth";
 import { privateKeyToAccount } from "viem/accounts";
 import { useUserStore } from "../../stores/useUserStore";
-import CreateProfilePage from "./createProfilePage";
+import Modal from "../../components/Modal";
+import UpdateProfileModal from "./update-profile";
+import TransactionsPage from "./transactions";
+import InfoPage from "./info";
+import Footer from "../../components/Footer";
 
 const fileToDataUrl = (file: File): Promise<string> => {
   return new Promise((res, rej) => {
@@ -79,11 +83,10 @@ export type TxItem = {
 };
 
 export type Profile = {
-  username: string;
-  fullname?: string;
-  bio?: string;
-  avatarUrl?: string;
-  socials?: string[];
+  fullname: string;
+  bio: string;
+  avatarUrl: string;
+  socials: string[];
   createAtBlock: bigint;
 };
 
@@ -95,22 +98,20 @@ type ProfileStore = {
 async function fetchUserProfile(
   address?: `0x${string}`
 ): Promise<Profile | null> {
-  const [usernameEncoded, keyEncoded, profileEncoded, createAtBlock] =
+  const [keyEncoded, profileEncoded, createAtBlock] =
     (await publicClient?.readContract({
       address: FUELME_ADDRESSES[CHAIN.id] as Address,
       abi: FUELME_ABI,
       functionName: "profilesOfAddress",
       args: [address],
-    })) as [Hex, Hex, Hex, bigint];
+    })) as [Hex, Hex, bigint];
 
-  if (!usernameEncoded || usernameEncoded === "0x") return null;
+  if (!keyEncoded || keyEncoded === "0x") return null;
 
-  const username = hexToString(usernameEncoded);
   const profileDecoded = hexToString(profileEncoded);
   const profileArray = profileDecoded.split("|");
 
   return {
-    username,
     fullname: profileArray[0] || "",
     avatarUrl: profileArray[1] || "",
     socials: profileArray[2] ? profileArray[2].split(",") : [],
@@ -120,18 +121,24 @@ async function fetchUserProfile(
 }
 
 // Main Component
-const FuelmeDashboardPage = () => {
+const DashboardPage = () => {
   const { address, isConnected } = useAccount();
-  const { openConnectModal } = useConnectModal();
   const { signMessageAsync } = useSignMessage();
   const { writeContractAsync } = useWriteContract();
+  const { data: ensData } = useEnsName();
   const initProfile = useUserStore((s) => s.initProfile);
   const user = useUserStore((s) => s.user);
   const isLoadingProfile = useUserStore((s) => s.loading);
+  const [isShowCreateProfileModal, setIsShowCreateProfileModal] =
+    useState<boolean>(false);
   const [profile, setProfile] = useState<ProfileStore>({
     profile: null,
     isLoading: true,
   });
+
+  console.log(user);
+
+  const isAccountCreated = !!profile.profile;
 
   useEffect(() => {
     if (isConnected && address) {
@@ -158,7 +165,7 @@ const FuelmeDashboardPage = () => {
       }
     };
 
-    initUserProfileLocal()
+    initUserProfileLocal();
   }, [profile, user, isLoadingProfile, address]);
 
   const requestStealthKey = async (): Promise<StealthKey> => {
@@ -170,7 +177,6 @@ const FuelmeDashboardPage = () => {
     return stealthKey;
   };
 
-
   const loadProfile = async (address: Address) => {
     if (!address) return;
     const profile = await fetchUserProfile(address);
@@ -180,37 +186,67 @@ const FuelmeDashboardPage = () => {
       setProfile({ profile, isLoading: false });
     }
   };
-  const createProfile = async (username: string) => {
-    const stealthKey = await requestStealthKey();
 
-    const encryptionPublicKey = getEncryptionPublicKey(
-      stealthKey.spendingKey.privateKey.slice(2)
-    );
+  const updateProfile = async (
+    fullname: string,
+    avatarUrl: string,
+    bio: string,
+    socials: string[]
+  ) => {
+    let result: any;
+    let txHash: Hex;
+    if (!isAccountCreated) {
+      const stealthKey = await requestStealthKey();
 
-    const key = stringToHex(
-      [
+      const encryptionPublicKey = getEncryptionPublicKey(
+        stealthKey.spendingKey.privateKey.slice(2)
+      );
+
+      const key = stringToHex(
+        [
+          stealthKey.spendingKey.publicKey,
+          stealthKey.viewingKey.publicKey,
+          encryptionPublicKey,
+        ].join("|")
+      );
+      const profileEncoded = stringToHex(
+        [fullname, avatarUrl, bio, socials.join(",")].join("|")
+      );
+
+      txHash = await writeContractAsync({
+        abi: FUELME_ABI,
+        address: FUELME_ADDRESSES[CHAIN.id] as Address,
+        functionName: "createProfile",
+        args: [key, profileEncoded],
+      });
+
+      result = await publicClient.waitForTransactionReceipt({
+        hash: txHash,
+      });
+
+      initProfile(
+        stealthKey.viewingKey.privateKey,
         stealthKey.spendingKey.publicKey,
-        stealthKey.viewingKey.publicKey,
-        encryptionPublicKey,
-      ].join("|")
-    );
-    const profileEncoded = stringToHex(
-      ["", "https://www.gravatar.com/avatar/?d=identicon", "", ""].join("|")
-    );
+        result.blockNumber.toString()
+      );
+    } else {
+      const profileEncoded = stringToHex(
+        [fullname, avatarUrl, bio, socials.join(",")].join("|")
+      );
 
-    const txHash = await writeContractAsync({
-      abi: FUELME_ABI,
-      address: FUELME_ADDRESSES[CHAIN.id] as Address,
-      functionName: "createProfile",
-      args: [stringToHex(username), key, profileEncoded],
-      gas: 1_000_000n,
-    });
+      txHash = await writeContractAsync({
+        abi: FUELME_ABI,
+        address: FUELME_ADDRESSES[CHAIN.id] as Address,
+        functionName: "updateProfile",
+        args: [profileEncoded],
+      });
 
-    const result = await publicClient.waitForTransactionReceipt({
-      hash: txHash,
-    });
-
+      result = await publicClient.waitForTransactionReceipt({
+        hash: txHash,
+      });
+    }
     if (result.status === "success") {
+      await loadProfile(address as Address);
       toast.success(
         <div>
           Profile updated
@@ -222,12 +258,6 @@ const FuelmeDashboardPage = () => {
             View on Explorer
           </a>
         </div>
-      );
-      loadProfile(address as Address);
-      initProfile(
-        stealthKey.viewingKey.privateKey,
-        stealthKey.spendingKey.publicKey,
-        result.blockNumber.toString()
       );
     } else {
       toast.error("Transaction failed");
@@ -264,26 +294,38 @@ const FuelmeDashboardPage = () => {
     );
   }
 
-  if (!profile.isLoading && !profile.profile) {
-    return (
-      <main className="min-h-[100dvh] bg-black text-white">
+  return (
+    <div className="flex min-h-screen flex-col">
+      <main className="flex-1 bg-black text-white">
         <Nav>
           <ConnectButton />
         </Nav>
-        <div className="flex flex-col items-center justify-center mt-20 px-4 text-center">
-          <CreateProfilePage onProfileCreated={createProfile} />
+        <div className="mx-auto max-w-6xl px-4 py-6 space-y-6">
+          <InfoPage
+            profile={profile.profile}
+            ensData={ensData}
+            address={address as string}
+            isAccountCreated={isAccountCreated}
+            onCreateProfile={() => setIsShowCreateProfileModal(true)}
+            onWithdraw={() => {}}
+          />
+          <TransactionsPage />
         </div>
+        <Modal
+          visible={isShowCreateProfileModal}
+          onClose={() => setIsShowCreateProfileModal(false)}
+        >
+          <UpdateProfileModal
+            profile={profile.profile || undefined}
+            onClose={() => setIsShowCreateProfileModal(false)}
+            isAccountCreated={isAccountCreated}
+            updateProfile={updateProfile}
+          />
+        </Modal>
       </main>
-    );
-  }
-
-  return (
-    <main className="min-h-[100dvh] bg-black text-white">
-      <Nav>
-        <ConnectButton />
-      </Nav>
-    </main>
+      <Footer />
+    </div>
   );
 };
 
-export default FuelmeDashboardPage;
+export default DashboardPage;

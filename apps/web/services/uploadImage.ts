@@ -13,16 +13,6 @@ function dataURItoBuffer(dataURI: string): Buffer {
   return Buffer.from(base64, "base64");
 }
 
-type UploadKind = "avatar" | "banner" | "generic";
-
-type UploadOpts = {
-  folder?: string;
-  publicId?: string;
-  kind?: UploadKind;
-  width?: number;
-  height?: number;
-};
-
 export const uploadImage = async (
   dataURI: string | Buffer,
   opts: { kind?: "avatar" | "banner" | "generic"; folder?: string; publicId?: string } = {}

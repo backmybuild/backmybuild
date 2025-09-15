@@ -7,6 +7,7 @@ import Logo from "../components/Logo";
 import Nav from "../components/Nav";
 import { useAccount } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
+import Footer from "../components/Footer";
 
 const LandingPage: NextPage = () => {
   const { openConnectModal } = useConnectModal();
@@ -38,10 +39,10 @@ const LandingPage: NextPage = () => {
             FAQ
           </a>
           <Link
-            href="/login"
+            href="/dashboard"
             className="rounded-full bg-white text-black px-3 py-1.5 font-semibold shadow hover:opacity-90"
           >
-            Login
+            Open App
           </Link>
         </div>
       </Nav>
@@ -225,7 +226,7 @@ const LandingPage: NextPage = () => {
               </ul>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
-                  href="/login"
+                  href="/dashboard"
                   className="rounded-full bg-white text-black px-5 py-2.5 text-sm font-semibold shadow hover:opacity-90"
                 >
                   Create your page
@@ -318,28 +319,7 @@ const LandingPage: NextPage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="mt-8 border-t border-white/10">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-white/60">
-          <div className="flex items-center gap-2">
-            <Logo />
-            <span>Stealth.Giving</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <a href="#privacy" className="hover:opacity-90">
-              Privacy
-            </a>
-            <a href="#faq" className="hover:opacity-90">
-              FAQ
-            </a>
-            <Link
-              href="/login"
-              className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 hover:bg-white/10"
-            >
-              Get started
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 };
