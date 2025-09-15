@@ -1,5 +1,5 @@
 {
-  "name": "@stealthgiving/defination",
+  "name": "@stealthgiving/definition",
   "module": "index.ts",
   "type": "module",
   "exports": {

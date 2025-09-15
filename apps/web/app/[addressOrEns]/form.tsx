@@ -7,7 +7,7 @@ import {
   useSignTypedData,
   useSwitchChain,
 } from "wagmi";
-import { CHAIN, publicClient, USDC_ADDRESS } from "@stealthgiving/defination";
+import { CHAIN, publicClient, USDC_ADDRESS } from "@stealthgiving/definition";
 import {
   encodeAbiParameters,
   erc20Abi,

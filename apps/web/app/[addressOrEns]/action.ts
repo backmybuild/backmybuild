@@ -1,8 +1,8 @@
 "use server";
 import "server-only";
 import { FUELME_ABI, FUELME_ADDRESSES } from "@stealthgiving/contracts";
-import { CHAIN, publicClient } from "@stealthgiving/defination";
-import { PRIVATE_KEY } from "@stealthgiving/defination/server";
+import { CHAIN, publicClient } from "@stealthgiving/definition";
+import { PRIVATE_KEY } from "@stealthgiving/definition/server";
 import { Address, createWalletClient, Hex, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 

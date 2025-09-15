@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@stealthgiving/contracts": "*",
-    "@stealthgiving/defination": "*",
+    "@stealthgiving/definition": "*",
     "@stealthgiving/stealth": "*"
   }
 }

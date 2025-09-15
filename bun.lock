@@ -16,7 +16,7 @@
       "name": "crawler",
       "dependencies": {
         "@stealthgiving/contracts": "*",
-        "@stealthgiving/defination": "*",
+        "@stealthgiving/definition": "*",
         "@stealthgiving/stealth": "*",
       },
       "devDependencies": {
@@ -47,7 +47,7 @@
         "@headlessui/react": "^2.2.8",
         "@rainbow-me/rainbowkit": "^2.2.8",
         "@stealthgiving/contracts": "*",
-        "@stealthgiving/defination": "*",
+        "@stealthgiving/definition": "*",
         "@stealthgiving/stealth": "*",
         "@tanstack/react-query": "^5.87.4",
         "@vercel/analytics": "^1.5.0",
@@ -86,8 +86,8 @@
         "typescript": "^5",
       },
     },
-    "packages/defination": {
-      "name": "@stealthgiving/defination",
+    "packages/definition": {
+      "name": "@stealthgiving/definition",
       "dependencies": {
         "@types/nodemailer": "^7.0.1",
         "nodemailer": "^7.0.6",
@@ -557,7 +557,7 @@
 
     "@stealthgiving/contracts": ["@stealthgiving/contracts@workspace:packages/contracts"],
 
-    "@stealthgiving/defination": ["@stealthgiving/defination@workspace:packages/defination"],
+    "@stealthgiving/definition": ["@stealthgiving/definition@workspace:packages/definition"],
 
     "@stealthgiving/stealth": ["@stealthgiving/stealth@workspace:packages/stealth"],
 

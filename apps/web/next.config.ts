@@ -25,7 +25,7 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "20mb",
     },
   },
-  transpilePackages: ["@stealthgiving/contracts", "@stealthgiving/defination", "@stealthgiving/stealth"]
+  transpilePackages: ["@stealthgiving/contracts", "@stealthgiving/definition", "@stealthgiving/stealth"]
 };
 
 export default nextConfig;

@@ -1,4 +1,4 @@
-# defination
+# definition
 
 To install dependencies:
 

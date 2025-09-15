@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 import { checkStealthAddress } from "@stealthgiving/stealth";
-import { CHAIN, publicClient } from "@stealthgiving/defination";
+import { CHAIN, publicClient } from "@stealthgiving/definition";
 import { FUELME_ADDRESSES } from "@stealthgiving/contracts";
 import { parseAbiItem } from "viem";
 

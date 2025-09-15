@@ -14,7 +14,7 @@ import {
   CHAIN,
   publicClient,
   STEALTH_SIGN_MESSAGE,
-} from "@stealthgiving/defination";
+} from "@stealthgiving/definition";
 import Nav from "../../components/Nav";
 import { ConnectButton, useConnectModal } from "@rainbow-me/rainbowkit";
 import {

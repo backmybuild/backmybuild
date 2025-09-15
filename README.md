@@ -4,3 +4,8 @@ Stealth.Giving is a platform that allows users to make anonymous donations to va
 ## Features
 - Stealth address: Every donation is made to a unique stealth address, ensuring that the donor's identity is not linked to the donation.
 - Free to create: Users can create a page for free and start receiving donations immediately.
+
+## Packages:
+- `@stealthgiving/contracts`: Solidity smart contracts for handling donations and stealth addresses.
+- `@stealthgiving/definition`: Definitions of all shared constants and types.
+- `@stealthgiving/stealth`: Helper functions for generating stealth addresses and handling cryptographic operations.

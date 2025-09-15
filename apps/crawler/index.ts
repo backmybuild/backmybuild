@@ -7,10 +7,10 @@
 //   type Hex,
 // } from "viem";
 // import prisma from "@stealthgiving/database";
-// import { CHAIN, publicClient, USDC_ADDRESS } from "@stealthgiving/defination";
+// import { CHAIN, publicClient, USDC_ADDRESS } from "@stealthgiving/definition";
 // import { FUELME_ABI, FUELME_ADDRESSES } from "@stealthgiving/contracts";
 // import { checkStealthAddress, computeViewingKey } from "@stealthgiving/stealth";
-// import { ACCOUNT_SEEDS } from "@stealthgiving/defination/server";
+// import { ACCOUNT_SEEDS } from "@stealthgiving/definition/server";
 
 // const BLOCK_BATCH_SIZE = 20n;
 // const AUTHORIZED_BATCH_SIZE = 50n;

@@ -7,7 +7,7 @@ import {
   RainbowKitProvider,
 } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { CHAIN } from "@stealthgiving/defination";
+import { CHAIN } from "@stealthgiving/definition";
 import { WagmiProvider } from "wagmi";
 import "@rainbow-me/rainbowkit/styles.css";
 
