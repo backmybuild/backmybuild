@@ -88,7 +88,7 @@ contract Stealth is Ownable {
         profilesOfAddress[msg.sender] = Profile({
             key: _key,
             profile: _profile,
-            createdAt: block.timestamp
+            createdAt: block.number
         });
 
         emit ProfileUpdated(msg.sender);
