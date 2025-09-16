@@ -25,10 +25,6 @@ const DonationInfo: NextPage = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!addressOrEns || !isAddress(addressOrEns)) {
-        setIsLoading(false);
-        return
-      };
       const [keyEncoded, profileEncoded, createAt] =
         (await publicClient.readContract({
           address: FUELME_ADDRESSES[CHAIN.id],
@@ -66,7 +62,11 @@ const DonationInfo: NextPage = () => {
       }
     };
     if (addressOrEns) {
-      fetchProfile();
+      try {
+        fetchProfile();
+      } catch (e) {
+        setIsLoading(false);
+      }
     }
   }, [addressOrEns]);
 

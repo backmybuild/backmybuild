@@ -1,9 +1,9 @@
 "use server";
-import { Metadata, ResolvingMetadata } from "next";
-import DonationInfo from "./info";
+import { Metadata, NextPage, ResolvingMetadata } from "next";
 import { CHAIN, publicClient } from "@stealthgiving/definition";
 import { FUELME_ABI, FUELME_ADDRESSES } from "@stealthgiving/contracts";
 import { Hex, hexToString, isAddress, stringToHex } from "viem";
+import DonationInfo from "./info";
 
 type Props = {
   params: Promise<{ addressOrEns: string }>;
@@ -26,7 +26,7 @@ export const generateMetadata = async (
         },
       };
     }
-    const [keyEncoded, profileEncoded, createAt] =
+    const [_keyEncoded, profileEncoded, _createAt] =
       (await publicClient.readContract({
         address: FUELME_ADDRESSES[CHAIN.id],
         abi: FUELME_ABI,
@@ -69,7 +69,7 @@ export const generateMetadata = async (
   }
 };
 
-const DonationPage = async () => {
+const DonationPage: NextPage = () => {
   return <DonationInfo />;
 };
 
