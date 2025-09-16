@@ -1,52 +1,14 @@
 import React from "react";
 import clsx from "clsx";
 import { Heart } from "lucide-react"; // make sure lucide-react is installed
+import { Transaction, useUserStore } from "../../stores/useUserStore";
+import { formatUnits } from "viem";
 
-// -------- Types (extend your existing Transaction) --------
-export type Support = {
-  blockNumber: string;
-  blockTimestamp: string; // ISO
-  txHash: string;
-  from: string;
-  to: string;
-  message?: string;
-  supporterName?: string; // e.g. "Anonymous", "Linh"
-  avatarUrl?: string; // optional
-  amount?: number; // in USD or native (your call)
-  currency?: string; // "USD" | "USDC" | "ETH"
-};
-
-// -------- Mock (replace with your data) --------
-const supports: Support[] = [
-  // {
-  //   blockNumber: "123456",
-  //   blockTimestamp: "2025-09-10T12:34:56Z",
-  //   txHash: "0xabc123...",
-  //   from: "0xfromAddress",
-  //   to: "0xtoAddress",
-  //   message: "Support for your work! Keep building 💪",
-  //   supporterName: "Anonymous",
-  //   avatarUrl: "",
-  //   amount: 5,
-  //   currency: "USDC",
-  // },
-  // {
-  //   blockNumber: "123789",
-  //   blockTimestamp: "2025-09-11T09:10:00Z",
-  //   txHash: "0xdef456...",
-  //   from: "0xaaa...bbb",
-  //   to: "0xtoAddress",
-  //   message: "Love FuelMe idea 🔒",
-  //   supporterName: "Linh",
-  //   avatarUrl: "",
-  //   amount: 10,
-  //   currency: "USDC",
-  // },
-];
-
-// -------- Utils --------
 const timeAgo = (iso: string) => {
-  const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  const s = Math.max(
+    0,
+    (Date.now() - new Date(Number(iso) * 1000).getTime()) / 1000
+  );
   if (s < 60) return `${Math.floor(s)}s ago`;
   const m = s / 60;
   if (m < 60) return `${Math.floor(m)}m ago`;
@@ -94,7 +56,7 @@ const Pill: React.FC<React.PropsWithChildren<{ className?: string }>> = ({
 );
 
 // -------- Card (mobile-first) --------
-const SupportCard: React.FC<{ s: Support }> = ({ s }) => (
+const SupportCard: React.FC<{ s: Transaction }> = ({ s }) => (
   <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 via-white/[.06] to-white/[.02] p-4 backdrop-blur-xl shadow-sm">
     <div className="flex items-center gap-3">
       <Avatar name={s.supporterName || "Anonymous"} url={s.avatarUrl} />
@@ -109,21 +71,19 @@ const SupportCard: React.FC<{ s: Support }> = ({ s }) => (
       </div>
       {s.amount != null && (
         <div className="rounded-xl bg-white text-black px-3 py-1.5 text-sm font-semibold shadow">
-          {s.amount} {s.currency || ""}
+          {formatUnits(BigInt(s.amount), 6)} USDC
         </div>
       )}
     </div>
 
     {s.message && (
-      <p className="mt-3 text-sm leading-relaxed text-white/85">
-        “{s.message}”
-      </p>
+      <p className="mt-3 text-sm leading-relaxed text-white/85">{s.message}</p>
     )}
   </div>
 );
 
 // -------- Table (desktop) --------
-const SupportsTableDesktop: React.FC<{ data: Support[] }> = ({ data }) => (
+const SupportsTableDesktop: React.FC<{ data: Transaction[] }> = ({ data }) => (
   <div className="hidden md:block overflow-x-auto rounded-2xl border border-white/10">
     <table className="min-w-full bg-black/30">
       <thead className="bg-white/[.04] text-white/70 text-sm">
@@ -160,7 +120,7 @@ const SupportsTableDesktop: React.FC<{ data: Support[] }> = ({ data }) => (
             <td className="px-4 py-3">
               {s.amount != null ? (
                 <span className="font-semibold">
-                  {s.amount} {s.currency || ""}
+                  {formatUnits(BigInt(s.amount), 6)} USDC
                 </span>
               ) : (
                 "—"
@@ -181,7 +141,16 @@ const SupportsTableDesktop: React.FC<{ data: Support[] }> = ({ data }) => (
 
 // -------- Main Section --------
 const TransactionsPage: React.FC = () => {
-  const data = supports; // replace with your fetched data
+  const isLoadingTransaction = useUserStore((state) => state.loading);
+  const data = useUserStore((state) => state.user?.transactions || []);
+
+  if (isLoadingTransaction) {
+    return (
+      <div className="min-h-[200px] w-full flex items-center justify-center">
+        <div className="text-white/70">Loading transactions...</div>
+      </div>
+    );
+  }
 
   return (
     <section className="relative overflow-hidden rounded-3xl border border-white/10 p-6 sm:p-8">
@@ -215,7 +184,9 @@ const TransactionsPage: React.FC = () => {
       ) : (
         <div className="text-center flex flex-col items-center gap-3">
           <Heart className="h-10 w-10 text-pink-500 opacity-80" />
-          <p className="text-gray-400">You don&apos;t have any supporters yet.</p>
+          <p className="text-gray-400">
+            You don&apos;t have any supporters yet.
+          </p>
           <p className="text-gray-500">
             Share your profile link to get supporters.
           </p>

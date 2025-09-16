@@ -1,4 +1,4 @@
-import { createPublicClient, createWalletClient, http, parseUnits, type Address, type Hex } from "viem";
+import { createPublicClient, createWalletClient, http, parseAbiItem, parseUnits, type Abi, type Address, type Hex } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { base, baseSepolia } from "viem/chains";
 
@@ -15,6 +15,10 @@ Sign this message to unlock your stealth profile.
 This won't cost any gas or FEE and won't perform any on-chain actions.
 Remember, DON'T SHARE this signature with anyone!
 `;
+const ANNOUNCER_ADDRESS: Address = "0x55649E01B5Df198D18D95b5cc5051630cfD45564"
+const ANNOUNCER_EVENT = parseAbiItem(
+  "event Announcement(uint256 indexed schemeId, address indexed stealthAddress, address indexed caller, bytes ephemeralPubKey, bytes metadata)"
+)
 
 const publicClient = createPublicClient({
   chain: CHAIN,
@@ -29,5 +33,7 @@ export {
   REQUEST_VIEWING_KEY_MESSAGE,
   USDC_ADDRESS,
   publicClient,
-  STEALTH_SIGN_MESSAGE
+  STEALTH_SIGN_MESSAGE,
+  ANNOUNCER_ADDRESS,
+  ANNOUNCER_EVENT
 }

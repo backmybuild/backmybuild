@@ -44,24 +44,51 @@ const UpdateProfileModal: React.FC<Props> = ({
       avatarUrl: "https://www.gravatar.com/avatar/?d=identicon",
     }
   );
+  const [linkError, setLinkError] = useState<Map<number, string> | null>(null);
   const [saving, setSaving] = useState(false);
 
   const handleUpdateProfile = async () => {
     setSaving(true);
-    let avatarUpload: string = form.avatarUrl;
-    if (form.avatarUrl.startsWith("data:")) {
-      avatarUpload = await uploadImage(avatarUpload, {
-        kind: "avatar",
-      });
+    try {
+      if (!validateLinks()) {
+        setSaving(false);
+        return;
+      }
+      let avatarUpload: string = form.avatarUrl;
+      if (form.avatarUrl.startsWith("data:")) {
+        avatarUpload = await uploadImage(avatarUpload, {
+          kind: "avatar",
+        });
+      }
+      await updateProfile(
+        form.fullname ?? "",
+        avatarUpload,
+        form.bio ?? "",
+        form.socials?.filter((s) => s.trim() !== "") ?? []
+      );
+      onClose();
+    } catch (e) {
+      console.error("Update profile error:", e);
     }
-    await updateProfile(
-      form.fullname ?? "",
-      avatarUpload,
-      form.bio ?? "",
-      form.socials?.filter((s) => s.trim() !== "") ?? []
-    );
     setSaving(false);
-    onClose();
+  };
+
+  const validateLinks = () => {
+    if (!form.socials || form.socials.length === 0) return true;
+    const map = new Map<number, string>();
+    form.socials.forEach((link, idx) => {
+      if (link.trim() === "") return;
+      try {
+        const url = new URL(link);
+        if (!["http:", "https:"].includes(url.protocol)) {
+          map.set(idx, "Invalid URL");
+        }
+      } catch (e) {
+        map.set(idx, "Invalid URL");
+      }
+    });
+    setLinkError(map);
+    return map.size === 0;
   };
 
   return (
@@ -121,40 +148,54 @@ const UpdateProfileModal: React.FC<Props> = ({
       <div className="space-y-2 mt-5">
         <div className="text-sm text-white/70">Social links</div>
         {(form.socials ?? []).map((s, idx) => (
-          <div key={idx} className="grid grid-cols-[5fr_1fr_auto] gap-2">
-            <label className="block">
-              <input
-                placeholder="https://…"
-                value={s}
-                onChange={(e) => {
-                  const arr = [...(form.socials ?? [])];
-                  arr[idx] = e.target.value;
-                  setForm((f) => ({ ...f, socials: arr }));
+          <div key={idx}>
+            <div className="grid grid-cols-[5fr_1fr_auto] gap-2">
+              <label className="block">
+                <input
+                  placeholder="https://…"
+                  value={s}
+                  onChange={(e) => {
+                    if (linkError?.has(idx)) {
+                      const newMap = new Map(linkError);
+                      newMap.delete(idx);
+                      setLinkError(newMap.size > 0 ? newMap : null);
+                    }
+                    const arr = [...(form.socials ?? [])];
+                    arr[idx] = e.target.value;
+                    setForm((f) => ({ ...f, socials: arr }));
+                  }}
+                  className={`w-full h-10 rounded-xl bg-white/5 border border-white/10 px-3 outline-none focus:ring-2 focus:ring-white/20`}
+                />
+              </label>
+              <button
+                className="rounded-xl bg-white/5 border border-white/10 px-3 text-sm hover:bg-white/10"
+                onClick={() => {
+                  setLinkError(null);
+                  setForm((f) => ({
+                    ...f,
+                    socials: (f.socials ?? []).filter((_, i) => i !== idx),
+                  }));
                 }}
-                className={`w-full h-10 rounded-xl bg-white/5 border border-white/10 px-3 outline-none focus:ring-2 focus:ring-white/20`}
-              />
-            </label>
-            <button
-              className="rounded-xl bg-white/5 border border-white/10 px-3 text-sm hover:bg-white/10"
-              onClick={() =>
-                setForm((f) => ({
-                  ...f,
-                  socials: (f.socials ?? []).filter((_, i) => i !== idx),
-                }))
-              }
-            >
-              x
-            </button>
+              >
+                x
+              </button>
+            </div>
+            {linkError?.has(idx) && (
+              <div className="text-xs text-red-500 self-center">
+                {linkError.get(idx)}
+              </div>
+            )}
           </div>
         ))}
         <button
           className="rounded-xl bg-white/5 border border-white/10 px-3 h-9 text-sm hover:bg-white/10"
-          onClick={() =>
+          onClick={() => {
+            setLinkError(null);
             setForm((f) => ({
               ...f,
               socials: [...(f.socials ?? []), ""],
-            }))
-          }
+            }));
+          }}
         >
           + Add social link
         </button>

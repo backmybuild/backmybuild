@@ -16,7 +16,7 @@ import {
   STEALTH_SIGN_MESSAGE,
 } from "@stealthgiving/definition";
 import Nav from "../../components/Nav";
-import { ConnectButton, useConnectModal } from "@rainbow-me/rainbowkit";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import {
   useAccount,
   useEnsName,
@@ -34,7 +34,6 @@ import UpdateProfileModal from "./update-profile";
 import TransactionsPage from "./transactions";
 import InfoPage from "./info";
 import Footer from "../../components/Footer";
-import { useIndexer } from "../../hooks/useIndexer";
 
 // ------------------------------------------------------------
 // Fuelme — Dashboard Page (rev)
@@ -86,8 +85,8 @@ async function fetchUserProfile(
   return {
     fullname: profileArray[0] || "",
     avatarUrl: profileArray[1] || "",
-    socials: profileArray[2] ? profileArray[2].split(",") : [],
-    bio: profileArray[3] || "",
+    bio: profileArray[2] || "",
+    socials: profileArray[3] ? profileArray[3].split(",") : [],
     createAtBlock,
   };
 }
@@ -107,7 +106,6 @@ const DashboardPage = () => {
     profile: null,
     isLoading: true,
   });
-  // useIndexer()
 
   const isAccountCreated = !!profile.profile;
 
@@ -170,7 +168,7 @@ const DashboardPage = () => {
       const stealthKey = await requestStealthKey();
 
       const encryptionPublicKey = getEncryptionPublicKey(
-        stealthKey.spendingKey.privateKey.slice(2)
+        stealthKey.viewingKey.privateKey.slice(2)
       );
 
       const key = stringToHex(

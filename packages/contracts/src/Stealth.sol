@@ -7,12 +7,14 @@ import "openzeppelin/utils/cryptography/EIP712.sol";
 import "openzeppelin/token/ERC20/utils/SafeERC20.sol";
 
 import "./interfaces/IUSDC.sol";
+import "./interfaces/IERC5564Announcer.sol";
 
 contract Stealth is Ownable {
     using SafeERC20 for IUSDC;
 
     uint256 public constant FEE_DENOMINATOR = 10000;
     IUSDC public immutable USDC;
+    IERC5564Announcer public immutable ANNOUNCER;
 
     struct TranferAuthorized {
         address from;
@@ -31,7 +33,7 @@ contract Stealth is Ownable {
 
     struct Donation {
         address to;
-        uint16 viewTag;
+        bytes1 viewTag;
         bytes ephemeralPublicKey; // onetime public key
         bytes message;
     }
@@ -50,23 +52,18 @@ contract Stealth is Ownable {
     event FeePercentUpdated(uint256 newFeePercent);
     event FeeCollectorUpdated(address newFeeCollector);
     event ProfileUpdated(address indexed user);
-    event Announcement(
-        address indexed stealthAddress,
-        uint16 indexed viewTag,
-        bytes ephemeralPublicKey,
-        uint256 amount,
-        bytes message
-    );
 
     constructor(
         address _owner,
         uint256 _feePercent,
         address _feeCollector,
-        address _usdc
+        address _usdc,
+        address _announcer
     ) Ownable(_owner) {
         feePercent = _feePercent;
         feeCollector = _feeCollector;
         USDC = IUSDC(_usdc);
+        ANNOUNCER = IERC5564Announcer(_announcer);
     }
 
     function updateFeePercent(uint256 _feePercent) external onlyOwner {
@@ -128,12 +125,11 @@ contract Stealth is Ownable {
         USDC.transfer(feeCollector, fee);
         USDC.transfer(_donation.to, amount - fee);
 
-        emit Announcement(
+        ANNOUNCER.announce(
+            1, // schemeId for secp256k1
             _donation.to,
-            _donation.viewTag,
             _donation.ephemeralPublicKey,
-            amount - fee,
-            _donation.message
+            abi.encode(_donation.viewTag, _donation.message)
         );
     }
 

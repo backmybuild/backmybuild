@@ -9,6 +9,7 @@ import {
 } from "wagmi";
 import { CHAIN, publicClient, USDC_ADDRESS } from "@stealthgiving/definition";
 import {
+  Address,
   encodeAbiParameters,
   erc20Abi,
   Hex,
@@ -17,7 +18,10 @@ import {
   parseUnits,
   stringToHex,
 } from "viem";
-import { generateStealthAddress } from "@stealthgiving/stealth";
+import {
+  encryptSymmetric,
+  generateStealthAddress,
+} from "@stealthgiving/stealth";
 import { FUELME_ADDRESSES } from "@stealthgiving/contracts";
 import { toast } from "react-toastify";
 import { donate } from "./action";
@@ -57,19 +61,20 @@ const DonateForm: React.FC<DonateProps> = ({ fullname, stealthKey }) => {
 
   const [message, setMessage] = useState(""); // added
 
+  const fetchBalance = async (address: Address) => {
+    const balance = await publicClient.readContract({
+      address: USDC_ADDRESS,
+      abi: erc20Abi,
+      functionName: "balanceOf",
+      args: [address],
+    });
+
+    setBalance(balance);
+  };
+
   useEffect(() => {
     if (isConnected && address) {
-      const fetchBalance = async () => {
-        const balance = await publicClient.readContract({
-          address: USDC_ADDRESS,
-          abi: erc20Abi,
-          functionName: "balanceOf",
-          args: [address],
-        });
-
-        setBalance(balance);
-      };
-      fetchBalance();
+      fetchBalance(address);
     }
   }, [isConnected, address]);
 
@@ -99,6 +104,18 @@ const DonateForm: React.FC<DonateProps> = ({ fullname, stealthKey }) => {
         stealthKey.spendingPublicKey,
         stealthKey.viewingPublicKey
       );
+      const sendMessage = message || "-";
+
+      const ethEncryptedData = encryptSymmetric(
+        stealthKey.encryptionPublicKey,
+        sendMessage
+      );
+      
+      const encryptedMessage = stringToHex([
+        ethEncryptedData.nonce,
+        ethEncryptedData.ephemPublicKey,
+        ethEncryptedData.ciphertext,
+      ].join("|"));
 
       const now = BigInt(Math.floor(Date.now() / 1000));
 
@@ -106,13 +123,13 @@ const DonateForm: React.FC<DonateProps> = ({ fullname, stealthKey }) => {
         to: newStealthAddress.address,
         viewTag: newStealthAddress.viewTag,
         ephemeralPublicKey: newStealthAddress.ephemeralPublicKey,
-        message: stringToHex(message),
+        message: encryptedMessage,
       };
 
       const donateHash = keccak256(
         encodeAbiParameters(
           parseAbiParameters(
-            "address to, uint16 viewTag, bytes ephemeralPublicKey, bytes message"
+            "address to, bytes1 viewTag, bytes ephemeralPublicKey, bytes message"
           ),
           [
             donationInfor.to,
@@ -171,6 +188,8 @@ const DonateForm: React.FC<DonateProps> = ({ fullname, stealthKey }) => {
           </a>
         </div>
       );
+
+      await fetchBalance(address);
     } catch (error) {
       console.error("Donation error:", error);
       toast.error("Error processing donation. Please try again.");
@@ -261,7 +280,10 @@ const DonateForm: React.FC<DonateProps> = ({ fullname, stealthKey }) => {
         </button>
       )}
       <div className="mt-6 text-center text-xs text-white/70">
-        <Link href="/dashboard" className="text-center text-xs text-white underline decoration-dotted hover:opacity-80">
+        <Link
+          href="/dashboard"
+          className="text-center text-xs text-white underline decoration-dotted hover:opacity-80"
+        >
           Create your free Stealth.Giving account
         </Link>
       </div>
