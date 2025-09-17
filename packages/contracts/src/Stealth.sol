@@ -2,47 +2,14 @@
 pragma solidity 0.8.28;
 
 import "openzeppelin/access/Ownable.sol";
-import "openzeppelin/utils/cryptography/ECDSA.sol";
-import "openzeppelin/utils/cryptography/EIP712.sol";
-import "openzeppelin/token/ERC20/utils/SafeERC20.sol";
 
-import "./interfaces/IUSDC.sol";
 import "./interfaces/IERC5564Announcer.sol";
+import "./interfaces/IStealth.sol";
 
-contract Stealth is Ownable {
-    using SafeERC20 for IUSDC;
+contract Stealth is IStealth, Ownable {
 
     uint256 public constant FEE_DENOMINATOR = 10000;
-    IUSDC public immutable USDC;
     IERC5564Announcer public immutable ANNOUNCER;
-
-    struct TranferAuthorized {
-        address from;
-        uint256 value;
-        uint256 validAfter;
-        uint256 validBefore;
-        bytes signature;
-    }
-
-    struct FullTranferAuthorized {
-        address from;
-        address to;
-        uint256 value;
-        bytes signature;
-    }
-
-    struct Donation {
-        address to;
-        bytes1 viewTag;
-        bytes ephemeralPublicKey; // onetime public key
-        bytes message;
-    }
-
-    struct Profile {
-        bytes key;
-        bytes profile;
-        uint256 createdAt;
-    }
 
     uint256 public feePercent;
     address public feeCollector;
@@ -57,12 +24,10 @@ contract Stealth is Ownable {
         address _owner,
         uint256 _feePercent,
         address _feeCollector,
-        address _usdc,
         address _announcer
     ) Ownable(_owner) {
         feePercent = _feePercent;
         feeCollector = _feeCollector;
-        USDC = IUSDC(_usdc);
         ANNOUNCER = IERC5564Announcer(_announcer);
     }
 
@@ -100,30 +65,17 @@ contract Stealth is Ownable {
         emit ProfileUpdated(msg.sender);
     }
 
-    function donate(
-        Donation calldata _donation,
-        TranferAuthorized calldata _transfer
-    ) external payable {
-        bytes32 nonce = hashDonation(_donation);
-        uint256 amount = _transfer.value;
-
+    function donate(Donation calldata _donation) external payable {
         require(_donation.to != address(0), "Invalid to");
-        require(amount > 0, "Invalid amount");
+        require(msg.value > 0, "Invalid amount");
 
-        uint256 fee = (amount * feePercent) / FEE_DENOMINATOR;
+        uint256 fee = (msg.value * feePercent) / FEE_DENOMINATOR;
 
-        USDC.receiveWithAuthorization(
-            _transfer.from,
-            address(this),
-            _transfer.value,
-            _transfer.validAfter,
-            _transfer.validBefore,
-            nonce,
-            _transfer.signature
-        ); // only this contract can call this action
+        (bool sentFee, ) = payable(feeCollector).call{value: fee}("");
+        require(sentFee, "Failed to send fee");
 
-        USDC.transfer(feeCollector, fee);
-        USDC.transfer(_donation.to, amount - fee);
+        (bool sent, ) = payable(_donation.to).call{value: msg.value - fee}("");
+        require(sent, "Failed to send ETH");
 
         ANNOUNCER.announce(
             1, // schemeId for secp256k1
@@ -131,26 +83,6 @@ contract Stealth is Ownable {
             _donation.ephemeralPublicKey,
             abi.encode(_donation.viewTag, _donation.message)
         );
-    }
-
-    function multipleTransferAuthorized(
-        FullTranferAuthorized[] calldata _transfers,
-        uint256 validAfter,
-        uint256 validBefore,
-        bytes32 nonce
-    ) external {
-        for (uint256 i = 0; i < _transfers.length; i++) {
-            FullTranferAuthorized calldata transfer = _transfers[i];
-            USDC.transferWithAuthorization(
-                transfer.from,
-                transfer.to,
-                transfer.value,
-                validAfter,
-                validBefore,
-                nonce,
-                transfer.signature
-            );
-        }
     }
 
     function hashDonation(

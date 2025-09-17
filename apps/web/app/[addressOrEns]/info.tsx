@@ -64,7 +64,7 @@ const DonationInfo: NextPage = () => {
     if (addressOrEns) {
       try {
         fetchProfile();
-      } catch (e) {
+      } catch (_) {
         setIsLoading(false);
       }
     }

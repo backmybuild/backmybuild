@@ -10,7 +10,7 @@ contract DeployStealth is Script {
     function run() public {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
-        new Stealth(vm.envAddress("OWNER_ADDRESS"), 100, vm.envAddress("FEE_COLLECTOR"), vm.envAddress("USDC"), vm.envAddress("ANNOUNCER")); // 1% fee
+        new Stealth(vm.envAddress("OWNER_ADDRESS"), 100, vm.envAddress("FEE_COLLECTOR"), vm.envAddress("ANNOUNCER")); // 1% fee
         vm.stopBroadcast();
     }
 }
