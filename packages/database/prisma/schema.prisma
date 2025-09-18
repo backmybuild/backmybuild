@@ -22,5 +22,5 @@ model Transaction {
 model SyncStatus {
   id                 String   @id @default(cuid())
   chainName          String   @unique
-  SyncToBlock        String   @unique
+  blockNum           String   @unique
 }
