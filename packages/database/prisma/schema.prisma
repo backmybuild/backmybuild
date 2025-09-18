@@ -1,0 +1,26 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Transaction {
+  id                 String   @id @default(cuid())
+  address            String   // the (stealth) receiving/withdrawing address
+  ephemeralPublicKey String  // only for RECEIVE
+  txHash             String
+  message            String?
+  chain              String
+  createdAt          DateTime @default(now())
+
+  @@index([address, createdAt(sort: Desc)])
+}
+
+model SyncStatus {
+  id                 String   @id @default(cuid())
+  chainName          String   @unique
+  SyncToBlock        String   @unique
+}

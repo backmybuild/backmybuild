@@ -7,7 +7,6 @@ import "./interfaces/IERC5564Announcer.sol";
 import "./interfaces/IStealth.sol";
 
 contract Stealth is IStealth, Ownable {
-
     uint256 public constant FEE_DENOMINATOR = 10000;
     IERC5564Announcer public immutable ANNOUNCER;
 

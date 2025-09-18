@@ -1,8 +1,11 @@
 {
-  "name": "crawler",
+  "name": "@stealthgiving/database",
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "exports": {
+    ".": "./index.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
@@ -10,9 +13,6 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@stealthgiving/contracts": "*",
-    "@stealthgiving/database": "*",
-    "@stealthgiving/definition": "*",
-    "@stealthgiving/stealth": "*"
+    "@prisma/client": "^6.16.2"
   }
 }

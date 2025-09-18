@@ -1,8 +1,8 @@
 import { createPublicClient, createWalletClient, http, parseAbiItem, parseUnits, type Abi, type Address, type Hex } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
-import { base, baseSepolia } from "viem/chains";
+import { abstract, apeChain, arbitrum, base, baseSepolia, berachain, blast, bsc, celo, cronos, fraxtal, linea, mainnet, mantle, moonbeam, opBNB, optimism, polygonZkEvm, scroll, sei, sonic, sophon, swellchain, taiko, unichain, worldchain, xdc, zksync } from "viem/chains";
 
-// const IS_PRODUCTION = process.env.NODE_ENV === "production";
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
 // const CHAIN = IS_PRODUCTION ? base : baseSepolia;
 const CHAIN = baseSepolia; // For testing purpose, always use Sepolia
 const USDC_ADDRESS = process.env.USDC_ADDRESS as Hex || "0x036CbD53842c5426634e7929541eC2318f3dCF7e"; // Sepolia USDC
@@ -19,6 +19,37 @@ const ANNOUNCER_ADDRESS: Address = "0x55649E01B5Df198D18D95b5cc5051630cfD45564"
 const ANNOUNCER_EVENT = parseAbiItem(
   "event Announcement(uint256 indexed schemeId, address indexed stealthAddress, address indexed caller, bytes ephemeralPubKey, bytes metadata)"
 )
+const SUPPORT_CHAINS = IS_PRODUCTION ? [
+  mainnet,
+  bsc,
+  arbitrum,
+  optimism,
+  base,
+  celo,
+  polygonZkEvm,
+  linea,
+  moonbeam,
+  scroll,
+  zksync,
+  opBNB,
+  fraxtal,
+  blast,
+  cronos,
+  mantle,
+  taiko,
+  worldchain,
+  xdc,
+  apeChain,
+  sophon,
+  unichain,
+  berachain,
+  swellchain,
+  sonic,
+  abstract,
+  sei
+] : [
+  baseSepolia
+]
 
 const publicClient = createPublicClient({
   chain: CHAIN,
@@ -35,5 +66,6 @@ export {
   publicClient,
   STEALTH_SIGN_MESSAGE,
   ANNOUNCER_ADDRESS,
-  ANNOUNCER_EVENT
+  ANNOUNCER_EVENT,
+  SUPPORT_CHAINS
 }
