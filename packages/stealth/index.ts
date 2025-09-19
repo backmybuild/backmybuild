@@ -55,14 +55,7 @@ const extractPortions = (signature: Hex) => {
   return { portion1, portion2, lastByte };
 };
 
-/**
- * Generate private keys from the signature of a message.
- *
- * This code is based on the logic and code from umbra-js (https://github.com/ScopeLift/umbra-protocol).
- *
- * @param signature
- * @returns private keypair
- */
+
 export const generateStealthKeyFromSignature = (signature: Hex): StealthKey => {
   const { portion1, portion2, lastByte } = extractPortions(signature);
 
