@@ -1,15 +1,13 @@
 import {
   createPublicClient,
+  getAddress,
   http,
-  parseAbiItem,
-  type Chain,
   type PublicClient,
 } from "viem";
-import { ANNOUNCER_ADDRESS, ANNOUNCER_EVENT, SUPPORT_CHAINS } from "@stealthgiving/definition";
+import { ANNOUNCER_ADDRESS, ANNOUNCER_EVENT, STEALTH_ADDRESS, SUPPORT_CHAINS } from "@stealthgiving/definition";
 import prisma from "@stealthgiving/database";
 
 const BLOCK_BATCH_SIZE = 20n;
-const AUTHORIZED_BATCH_SIZE = 50n;
 
 // prdefine clients
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -27,7 +25,23 @@ const processRange = async (
   });
 
   for (const event of announcementEvents) {
-    // #TODO: process events
+    try {
+      const { schemeId, stealthAddress, caller, ephemeralPubKey, metadata } = event.args;
+      if (!schemeId || !stealthAddress || !caller || !ephemeralPubKey || !metadata) continue;
+      if (getAddress(caller) !== getAddress(STEALTH_ADDRESS)) continue; // only process if caller is stealth contract
+
+      await prisma.transaction.create({
+        data: {
+          address: getAddress(stealthAddress),
+          ephemeralPublicKey: ephemeralPubKey,
+          txHash: event.transactionHash,
+          message: metadata,
+          chain: client.chain?.name || "Unknown",
+        },
+      });
+    } catch (e) {
+      console.error("Error processing event:", e);
+    }
   }
 };
 
@@ -57,7 +71,6 @@ const main = async () => {
   while (true) {
     for (const chain of SUPPORT_CHAINS) {
       try {
-        console.log(`Crawling chain: ${chain.name}`);
         const client: PublicClient = createPublicClient({
           chain: chain,
           transport: http(),
@@ -86,9 +99,6 @@ const main = async () => {
       }
       await sleep(1000); // Sleep between chains to avoid rate limits
     }
-    console.log(
-      "Completed one full crawl cycle. Sleeping before next cycle..."
-    );
     await sleep(60000); // Sleep for 1 minute before next full cycle
   }
 };

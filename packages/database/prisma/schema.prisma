@@ -9,9 +9,9 @@ datasource db {
 
 model Transaction {
   id                 String   @id @default(cuid())
-  address            String   // the (stealth) receiving/withdrawing address
-  ephemeralPublicKey String  // only for RECEIVE
-  txHash             String
+  address            String @unique   // the (stealth) receiving/withdrawing address
+  ephemeralPublicKey String // only for RECEIVE
+  txHash             String @unique
   message            String?
   chain              String
   createdAt          DateTime @default(now())

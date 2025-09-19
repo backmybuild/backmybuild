@@ -55,7 +55,7 @@ This won't cost any gas or FEE and won't perform any on-chain actions.
 Remember, DON'T SHARE this signature with anyone!
 `;
 const ANNOUNCER_ADDRESS: Address = "0x55649E01B5Df198D18D95b5cc5051630cfD45564";
-const STEALTH_ADDRESS: Address = "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"; // Uniswap V3 as placeholder
+const STEALTH_ADDRESS: Address = "0xaDB7c80Ad99FfA6aAfD2F9AC7d25Ed7587AecA13"; // Uniswap V3 as placeholder
 const ANNOUNCER_EVENT = parseAbiItem(
   "event Announcement(uint256 indexed schemeId, address indexed stealthAddress, address indexed caller, bytes ephemeralPubKey, bytes metadata)"
 );
@@ -108,4 +108,5 @@ export {
   ANNOUNCER_ADDRESS,
   ANNOUNCER_EVENT,
   SUPPORT_CHAINS,
+  STEALTH_ADDRESS
 };

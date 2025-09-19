@@ -39,6 +39,7 @@ import {
   publicKeyToAddress,
 } from "viem/accounts";
 import { FUELME_ADDRESSES, FUELME_ABI } from "@stealthgiving/contracts";
+import { STEALTH_ADDRESS } from "@stealthgiving/definition";
 import { anvil, baseSepolia, localhost } from "viem/chains";
 
 const PRIVATE_SEEDS = process.env.PRIVATE_SEEDS ?? "test";
@@ -49,117 +50,30 @@ const client = createPublicClient({
 });
 
 const testDonate = async () => {
-  const forwarder = createWalletClient({
+  const userAccount = createWalletClient({
     account: privateKeyToAccount((process.env.PRIVATE_KEY as Hex) || "0x"),
     chain: baseSepolia,
     transport: http(),
   });
 
-  const fuelMeAddress = FUELME_ADDRESSES[baseSepolia.id];
-  
-  const mnemonic = process.env.MNEMONIC ?? generateMnemonic(english);
-
-  const user1Account = privateKeyToAccount(
-    (process.env.PRIVATE_KEY as Hex) || "0x"
-  );
-  const user2Account = privateKeyToAccount(
-    (process.env.PRIVATE_KEY as Hex) || "0x"
-  );
-
-  const USDC = (await client.readContract({
-    address: fuelMeAddress,
+  const donateAddress = "0x704edAab548655c2958D8A7fe58642b31dB4FB28"
+  const tx = await userAccount.writeContract({
     abi: FUELME_ABI,
-    functionName: "USDC",
-  })) as Address;
-  console.log("USDC Address:", USDC);
-  console.log("User Address:", user1Account.address);
-  console.log("Donate 0.1USDC from User Account To Test Account");
-
-  const donateInformation = {
-    to: user2Account.address,
-    viewTag: 2,
-    ephemeralPublicKey: "0x",
-    message: "0x",
-  };
-
-  const donateHash = keccak256(
-    encodeAbiParameters(
-      parseAbiParameters(
-        "address to, uint16 viewTag, bytes ephemeralPublicKey, bytes message"
-      ),
-      [
-        donateInformation.to,
-        donateInformation.viewTag,
-        donateInformation.ephemeralPublicKey,
-        donateInformation.message,
-      ] as any
-    )
-  );
-
-  const transferInformation = {
-    from: user1Account.address,
-    value: 10000000n,
-    validAfter: 0n,
-    validBefore: 100000000000000n,
-  };
-
-  const transferSignature = await user1Account.signTypedData({
-    types: {
-      ReceiveWithAuthorization: [
-        { name: "from", type: "address" },
-        { name: "to", type: "address" },
-        { name: "value", type: "uint256" },
-        { name: "validAfter", type: "uint256" },
-        { name: "validBefore", type: "uint256" },
-        { name: "nonce", type: "bytes32" },
-      ],
-    },
-    primaryType: "ReceiveWithAuthorization",
-    domain: {
-      name: "USDC",
-      version: "2",
-      chainId: 84532n,
-      verifyingContract: getAddress(USDC),
-    },
-    message: {
-      from: transferInformation.from,
-      to: fuelMeAddress,
-      value: transferInformation.value,
-      validAfter: transferInformation.validAfter,
-      validBefore: transferInformation.validBefore,
-      nonce: donateHash,
-    },
-  });
-  const { request } = await client.simulateContract({
-    abi: FUELME_ABI,
-    address: fuelMeAddress,
+    address: STEALTH_ADDRESS,
     functionName: "donate",
-    args: [
-      {
-        ...donateInformation,
-      },
-      {
-        ...transferInformation,
-        signature: transferSignature,
-      },
-    ],
-  });
-
-  const tx = await forwarder.writeContract(request);
+    args: [{
+      to: donateAddress,
+      viewTag: "0x1",
+      ephemeralPublicKey: "0x1",
+      message: "0x1"
+    }],
+    value: parseEther("0.00001"),
+  })
 
   console.log(tx);
-
-  const balanceUser2 = await client.readContract({
-    address: USDC,
-    abi: erc20Abi,
-    functionName: "balanceOf",
-    args: [user2Account.address],
-  });
-
-  console.log("User2 USDC Balance:", balanceUser2);
 };
 
-// testDonate();
+testDonate();
 
 const testTransfer = async () => {
   const forwarder = createWalletClient({
@@ -249,7 +163,7 @@ const testTransfer = async () => {
   console.log("User2 USDC Balance:", balanceUser2);
 };
 
-testTransfer()
+// testTransfer()
 
 const testFull = async () => {
   const mnemonic = process.env.MNEMONIC ?? generateMnemonic(english);
