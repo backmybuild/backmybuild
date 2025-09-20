@@ -3,6 +3,8 @@ import clsx from "clsx";
 import { Heart } from "lucide-react"; // make sure lucide-react is installed
 import { Transaction, useUserStore } from "../../stores/useUserStore";
 import { formatUnits } from "viem";
+import Link from "next/link";
+import { CHAIN } from "@stealthgiving/definition";
 
 const timeAgo = (iso: string) => {
   const s = Math.max(
@@ -130,7 +132,7 @@ const SupportsTableDesktop: React.FC<{ data: Transaction[] }> = ({ data }) => (
               {timeAgo(s.blockTimestamp)}
             </td>
             <td className="px-4 py-3">
-              <code className="text-xs text-white/70">{s.txHash}</code>
+              <Link className="text-xs" href={CHAIN.blockExplorers.default.url + `/tx/${s.txHash}`}>View on scan</Link>
             </td>
           </tr>
         ))}

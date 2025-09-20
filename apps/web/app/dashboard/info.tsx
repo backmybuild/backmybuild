@@ -91,6 +91,7 @@ const InfoPage: React.FC<Props> = ({
 
               <button
                 className={`h-10 px-4 hover:cursor-pointer rounded-4xl bg-white text-black font-medium hover:bg-white/90 active:scale-[.99]`}
+                onClick={onWithdraw}
               >
                 Withdraw USDC
               </button>

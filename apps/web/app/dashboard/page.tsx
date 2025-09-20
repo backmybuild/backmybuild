@@ -2,12 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Address,
-  Hex,
-  hexToString,
-  stringToHex,
-} from "viem";
+import { Address, Hex, hexToString, stringToHex } from "viem";
 import { FUELME_ABI, FUELME_ADDRESSES } from "@stealthgiving/contracts";
 import { toast } from "react-toastify";
 import {
@@ -34,6 +29,7 @@ import UpdateProfileModal from "./update-profile";
 import TransactionsPage from "./transactions";
 import InfoPage from "./info";
 import Footer from "../../components/Footer";
+import Withdraw from "./withdraw";
 
 // ------------------------------------------------------------
 // Fuelme — Dashboard Page (rev)
@@ -101,6 +97,8 @@ const DashboardPage = () => {
   const user = useUserStore((s) => s.user);
   const isLoadingProfile = useUserStore((s) => s.loading);
   const [isShowCreateProfileModal, setIsShowCreateProfileModal] =
+    useState<boolean>(false);
+  const [isShowWithdrawModal, setIsShowWithdrawModal] =
     useState<boolean>(false);
   const [profile, setProfile] = useState<ProfileStore>({
     profile: null,
@@ -276,7 +274,7 @@ const DashboardPage = () => {
             address={address as string}
             isAccountCreated={isAccountCreated}
             onCreateProfile={() => setIsShowCreateProfileModal(true)}
-            onWithdraw={() => {}}
+            onWithdraw={() => setIsShowWithdrawModal(true)}
           />
           <TransactionsPage />
         </div>
@@ -290,6 +288,12 @@ const DashboardPage = () => {
             isAccountCreated={isAccountCreated}
             updateProfile={updateProfile}
           />
+        </Modal>
+        <Modal
+          visible={isShowWithdrawModal}
+          onClose={() => setIsShowWithdrawModal(false)}
+        >
+          <Withdraw />
         </Modal>
       </main>
       <Footer />

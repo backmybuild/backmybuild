@@ -203,7 +203,13 @@ const UpdateProfileModal: React.FC<Props> = ({
 
       <div className="flex items-center justify-end gap-2 pt-2">
         <button
-          className={`h-10 px-4 hover:cursor-pointer rounded-xl bg-white text-black font-medium hover:bg-white/90 active:scale-[.99] disabled:cursor-not-allowed disabled:opacity-50`}
+          className={`h-10 px-4 hover:cursor-pointer rounded-xl font-medium bg-white/5 text-white hover:bg-white/10 border border-white/10`}
+          onClick={onClose}
+        >
+          Close
+        </button>
+        <button
+          className={`h-10 px-4 hover:cursor-pointer rounded-xl bg-white text-black font-medium hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50`}
           disabled={saving}
           onClick={handleUpdateProfile}
         >

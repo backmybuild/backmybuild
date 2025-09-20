@@ -1,6 +1,4 @@
-import Link from "next/link";
 import { useIndexer } from "../../hooks/useIndexer";
-import { CHAIN } from "@stealthgiving/definition";
 
 const Sync: React.FC = () => {
   const { progress, error } = useIndexer();
@@ -16,17 +14,12 @@ const Sync: React.FC = () => {
     <div
       className={`text-sm ${blockDiff > 500 ? "text-yellow-400" : "text-green-400"}`}
     >
-      Synced to block:{" "}
-      <Link
-        className="underline decoration-dotted hover:opacity-80"
-        href={
-          CHAIN.blockExplorers.default.url + `/block/${progress.syncToBlock}`
-        }
-      >
-        {progress.syncToBlock}
-      </Link>{" "}
-      {blockDiff > 500 &&
-        `(${progress.currentBlock - progress.syncToBlock} blocks ahead)`}
+      Synced to{" "}
+      {blockDiff > 500 ? (
+        `(${progress.currentBlock - progress.syncToBlock} blocks ahead)`
+      ) : (
+        <span>latest</span>
+      )}
     </div>
   );
 };
