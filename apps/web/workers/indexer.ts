@@ -107,7 +107,7 @@ self.onmessage = async (ev: MessageEvent) => {
               args: [stealthAddress],
             });
             const ens = await ethClient.getEnsName({
-              address: "0x4FFF0f708c768a46050f9b96c46C265729D1a62f",
+              address: transaction.from,
             });
             const ensAvatar = ens
               ? await ethClient.getEnsAvatar({

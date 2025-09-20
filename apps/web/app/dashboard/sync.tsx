@@ -14,11 +14,10 @@ const Sync: React.FC = () => {
     <div
       className={`text-sm ${blockDiff > 500 ? "text-yellow-400" : "text-green-400"}`}
     >
-      Synced to{" "}
       {blockDiff > 500 ? (
-        `(${progress.currentBlock - progress.syncToBlock} blocks ahead)`
+        `Syncing (${progress.currentBlock - progress.syncToBlock} blocks ahead)`
       ) : (
-        <span>latest</span>
+        <span>Sync to latest</span>
       )}
     </div>
   );
