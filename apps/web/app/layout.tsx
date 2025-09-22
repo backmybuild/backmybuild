@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   title: "Stealth Giving",
   description: "A better way to give crypto to anyone, anywhere.",
   icons: {
-    icon: "/logo.svg"
+    icon: "/backmybuild.png"
   }
 };
 

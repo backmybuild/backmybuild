@@ -6,8 +6,8 @@ const Footer: React.FC = () => {
     <footer className="mt-8 border-t border-white/10">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-white/60">
         <div className="flex items-center gap-2">
-          <Logo />
-          <span>Stealth.Giving</span>
+          <img src="/back.png" alt="Back Logo" className="h-7 w-15" />
+          <span className="font-semibold tracking-wide">my Build</span>
         </div>
         <div className="flex items-center gap-4">
           <a href="#privacy" className="hover:opacity-90">

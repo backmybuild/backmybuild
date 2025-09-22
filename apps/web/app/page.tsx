@@ -51,7 +51,7 @@ const LandingPage: NextPage = () => {
                 </span>
               </h1>
               <p className="mt-4 text-white/70 text-lg">
-                Stealth.Giving lets anyone donate on Base while keeping
+                Backmybuild lets anyone donate on Base while keeping
                 recipient addresses private. Set up a page, share it, and
                 receive support via stealth addresses — no doxxing, no awkward
                 wallet drops.
